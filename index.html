@@ -1077,7 +1077,9 @@ function updateSubmittedBanner() {
     banner.style.display = 'flex';
     banner.className = 'submitted-banner';
     banner.innerHTML = `<div class="check">✓</div><div class="info"><h4>${currentTeam} — 제출 완료</h4><p>월 ${mCount}건, 연 ${yCount}건 등록됨${submittedAt ? ' · 최종 저장: ' + submittedAt : ''}</p></div>
-      <button class="btn btn-outline" onclick="editTeamData()">수정하기</button>`;
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="editTeamData()">수정하기</button>
+      </div>`;
   } else {
     banner.style.display = 'none';
   }
@@ -1194,7 +1196,10 @@ function renderAdminTeamDetail() {
   const yArr = data.yearly ? Object.values(data.yearly) : [];
 
   let html = `<div class="table-card"><div class="table-card-header"><h3>${adminCurrentTeam} 상세</h3>
-      <button class="btn btn-csv" onclick="downloadCurrentTeamCSV()" style="display:flex;align-items:center;gap:5px;font-size:12px;">📥 ${adminCurrentTeam} CSV 다운로드</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-csv" onclick="downloadCurrentTeamCSV()" style="display:flex;align-items:center;gap:5px;font-size:12px;">📥 CSV 다운로드</button>
+        <button class="btn btn-danger" onclick="adminDeleteTeamData('${adminCurrentTeam}')" style="font-size:12px;padding:6px 14px;">🗑 데이터 삭제</button>
+      </div>
     </div>
     <div class="preview-meta">
       <span>작성자: <strong>${data.meta?.writer||'-'}</strong></span>
@@ -1225,6 +1230,17 @@ function renderAdminTeamDetail() {
   }
 
   area.innerHTML = html;
+}
+
+function adminDeleteTeamData(teamName) {
+  if (!confirm(`⚠️ "${teamName}" 팀의 모든 지출 데이터를 삭제합니다.\n\n삭제 후 복구할 수 없습니다. 계속하시겠습니까?`)) return;
+  if (!confirm(`정말로 "${teamName}" 데이터를 삭제하시겠습니까?\n(최종 확인)`)) return;
+  fbDb.ref(DB_ROOT + '/' + teamName).remove().then(() => {
+    adminCurrentTeam = null;
+    showToast(`${teamName} 데이터가 삭제되었습니다.`);
+  }).catch(err => {
+    showToast('삭제 오류: ' + err.message);
+  });
 }
 
 // ══════════════════════════════════
