@@ -404,7 +404,8 @@
         </div>
         <div class="form-group">
           <label>해당 월 <span class="req">*</span></label>
-          <input type="month" id="staffMonth">
+          <input type="text" id="staffMonth" placeholder="예: 202601" maxlength="7" style="font-variant-numeric:tabular-nums;">
+          <span id="staffMonthPreview" style="font-size:12px;color:var(--accent);margin-top:4px;display:block;min-height:18px;"></span>
         </div>
       </div>
     </div>
@@ -924,7 +925,13 @@ function loadTeamDataToForm() {
   // Meta
   if (data.meta) {
     document.getElementById('staffWriter').value = data.meta.writer || '';
-    document.getElementById('staffMonth').value = data.meta.month || '';
+    const rawMonth = (data.meta.month || '').replace(/-/g, '');
+    document.getElementById('staffMonth').value = rawMonth;
+    const preview = document.getElementById('staffMonthPreview');
+    if (preview && rawMonth.length === 6) {
+      preview.textContent = `→ ${rawMonth.substring(0,4)}년 ${parseInt(rawMonth.substring(4,6))}월`;
+      preview.style.color = 'var(--accent)';
+    }
     document.getElementById('staffNote').value = data.meta.note || '';
   }
 
@@ -1006,11 +1013,17 @@ function removeStaffRow(btn) {
   Array.from(tbody.rows).forEach((r, i) => { const rn = r.querySelector('.row-num'); if (rn) rn.textContent = i + 1; });
 }
 
+function formatMonthValue(v) {
+  const nums = (v||'').replace(/[^0-9]/g,'');
+  if (nums.length === 6) return nums.substring(0,4) + '-' + nums.substring(4,6);
+  return v; // 이미 2026-01 형식이면 그대로 반환
+}
+
 function collectStaffData() {
   const meta = {
     team: currentTeam,
     writer: document.getElementById('staffWriter').value.trim(),
-    month: document.getElementById('staffMonth').value,
+    month: formatMonthValue(document.getElementById('staffMonth').value),
     note: document.getElementById('staffNote').value.trim(),
     submittedAt: new Date().toISOString()
   };
@@ -1601,8 +1614,39 @@ function showToast(msg) {
 // ══════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
-  const monthStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
-  document.getElementById('staffMonth').value = monthStr;
+  const monthStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0');
+  const staffMonthInput = document.getElementById('staffMonth');
+  staffMonthInput.value = monthStr;
+  updateMonthPreview(monthStr);
+
+  // 해당 월 자동 포맷 (202601 → 2026-01)
+  staffMonthInput.addEventListener('input', function() {
+    let v = this.value.replace(/[^0-9]/g, ''); // 숫자만 남기기
+    if (v.length > 6) v = v.substring(0, 6);
+    this.value = v;
+    updateMonthPreview(v);
+  });
+
+  function updateMonthPreview(v) {
+    const preview = document.getElementById('staffMonthPreview');
+    if (v.length === 6) {
+      const y = v.substring(0, 4);
+      const m = v.substring(4, 6);
+      const mi = parseInt(m);
+      if (mi >= 1 && mi <= 12) {
+        preview.textContent = `→ ${y}년 ${mi}월`;
+        preview.style.color = 'var(--accent)';
+      } else {
+        preview.textContent = '⚠ 월은 01~12 사이로 입력해 주세요';
+        preview.style.color = 'var(--danger)';
+      }
+    } else if (v.length > 0) {
+      preview.textContent = `숫자 6자리 입력 (예: ${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')})`;
+      preview.style.color = 'var(--text-muted)';
+    } else {
+      preview.textContent = '';
+    }
+  }
 
   // Staff Approval period defaults (previous month)
   const year = today.getFullYear();
