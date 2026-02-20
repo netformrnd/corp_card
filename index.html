@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>법인카드 고정지출 관리 시스템</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1B2A4A; --primary-light: #2C4A7C;
+    --accent: #3B82F6; --accent-soft: #DBEAFE; --accent-hover: #2563EB;
+    --surface: #FFFFFF; --bg: #F1F5F9; --bg-warm: #F8FAFC;
+    --text: #1E293B; --text-secondary: #64748B; --text-muted: #94A3B8;
+    --border: #E2E8F0; --border-light: #F1F5F9;
+    --success: #10B981; --success-bg: #ECFDF5;
+    --warning: #F59E0B; --warning-bg: #FFFBEB;
+    --danger: #EF4444; --danger-bg: #FEF2F2;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
+    --radius: 12px; --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Pretendard','Noto Sans KR',-apple-system,sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+  /* ── Sticky Header ── */
+  .top-header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 0 30px; height: 56px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .top-header h1 { font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  .hdr-right { display: flex; align-items: center; gap: 10px; }
+  .sync-status { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .sync-dot.online { background: #34D399; box-shadow: 0 0 8px rgba(52,211,153,.5); animation: pulse 2s infinite; }
+  .sync-dot.offline { background: #ef4444; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hdr-btn { padding: 6px 14px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: inherit; border: none; background: rgba(255,255,255,.08); color: #94A3B8; border: 1px solid rgba(255,255,255,.12); transition: all .15s; }
+  .hdr-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+  /* ── Container ── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px 24px 60px; }
+
+  /* ── Mode Switch (직원/경영관리팀) ── */
+  .mode-switch { display: flex; gap: 4px; background: var(--surface); border-radius: var(--radius); padding: 5px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); margin-bottom: 20px; }
+  .mode-btn { flex: 1; padding: 12px 16px; border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); transition: all 0.25s; }
+  .mode-btn:hover { background: var(--bg); color: var(--text); }
+  .mode-btn.active { background: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
+
+  /* ── Team Selector ── */
+  .team-selector { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 20px 24px; margin-bottom: 20px; }
+  .team-selector-title { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .team-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .team-tab { padding: 8px 18px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+  .team-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .team-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .team-tab .team-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .team-tab .team-count { font-size: 11px; background: rgba(0,0,0,0.08); padding: 1px 7px; border-radius: 10px; }
+  .team-tab.active .team-count { background: rgba(255,255,255,0.25); }
+  .quick-join { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 16px; background: var(--bg-warm); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .quick-join input { padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 13px; width: 130px; }
+  .quick-join input:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Tabs (within each mode) ── */
+  .sub-tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .sub-tab { padding: 10px 20px; border: none; background: var(--surface); border: 1px solid var(--border); font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; }
+  .sub-tab:hover { background: var(--bg); color: var(--text); }
+  .sub-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* ── Card ── */
+  .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 28px; margin-bottom: 20px; }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card-title .icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .card-title .icon.blue { background: var(--accent-soft); }
+  .card-title .icon.green { background: var(--success-bg); }
+  .card-title .icon.yellow { background: var(--warning-bg); }
+  .card-title .icon.red { background: var(--danger-bg); }
+  .card-title .icon.purple { background: #EDE9FE; }
+
+  .notice-text { font-size: 14px; color: var(--text); line-height: 1.8; }
+
+  .change-box { background: linear-gradient(135deg,#FFF7ED,#FFFBF0); border: 1px solid #FED7AA; border-left: 4px solid var(--warning); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 20px 24px; margin: 16px 0; }
+  .change-box .label { font-size: 12px; font-weight: 600; color: #B45309; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .change-arrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .change-from, .change-to { padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; }
+  .change-from { background: #FEE2E2; color: #991B1B; text-decoration: line-through; }
+  .change-to { background: #D1FAE5; color: #065F46; }
+
+  .info-grid { display: grid; grid-template-columns: 100px 1fr; gap: 8px 16px; font-size: 14px; margin-top: 12px; }
+  .info-grid dt { font-weight: 600; color: var(--text-secondary); }
+  .info-grid dd { color: var(--text); }
+
+  .purpose-list { display: grid; gap: 16px; margin-top: 8px; }
+  .purpose-item { display: flex; gap: 14px; align-items: flex-start; }
+  .purpose-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .purpose-item h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .purpose-item p { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+
+  .method-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .method-opt { background: var(--bg-warm); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+  .method-opt h4 { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 6px; }
+  .method-opt p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+
+  .notice-footer { background: var(--bg-warm); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px 24px; margin-top: 16px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.75; }
+  .notice-footer strong { color: var(--text); }
+
+  /* ── Form ── */
+  .form-header { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 24px 28px; margin-bottom: 20px; }
+  .form-header h2 { font-size: 17px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+  .form-header p { font-size: 13px; color: var(--text-secondary); }
+
+  .team-info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+  .form-group label .req { color: var(--danger); margin-left: 2px; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface); transition: border-color 0.2s; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .form-group textarea { resize: vertical; min-height: 56px; }
+
+  /* ── Table ── */
+  .table-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
+  .table-card-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--bg-warm); flex-wrap: wrap; gap: 10px; }
+  .table-card-header h3 { font-size: 14px; font-weight: 700; color: var(--primary); }
+
+  .table-scroll { overflow-x: auto; }
+  .expense-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .expense-table thead th { background: var(--primary); color: #fff; font-weight: 600; font-size: 11.5px; padding: 10px 8px; text-align: center; white-space: nowrap; }
+  .expense-table tbody td { padding: 6px 4px; border-bottom: 1px solid var(--border-light); text-align: center; vertical-align: middle; font-size: 12.5px; }
+  .expense-table tbody tr:hover { background: #F8FAFF; }
+  .expense-table tbody td input, .expense-table tbody td select { width: 100%; padding: 6px 6px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; color: var(--text); background: #fff; text-align: center; }
+  .expense-table tbody td input:focus, .expense-table tbody td select:focus { outline: none; border-color: var(--accent); }
+  .expense-table tbody td input::placeholder { color: var(--text-muted); font-size: 10.5px; }
+
+  .row-num { width: 26px; height: 26px; background: var(--accent-soft); color: var(--accent); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+  /* ── Preview Table ── */
+  .preview-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .preview-table thead th { background: #334155; color: #fff; font-weight: 600; font-size: 11px; padding: 10px 8px; text-align: center; white-space: nowrap; }
+  .preview-table tbody td { padding: 10px 8px; border-bottom: 1px solid var(--border-light); text-align: center; font-size: 12.5px; }
+  .preview-table tbody tr:nth-child(even) { background: #FAFBFC; }
+  .preview-table tbody tr:hover { background: #F0F4FF; }
+
+  .card-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 600; font-family: 'SF Mono','Fira Code',monospace; letter-spacing: 0.5px; background: #EEF2FF; color: #4338CA; }
+  .badge-cycle { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-monthly { background: #DBEAFE; color: #1D4ED8; }
+  .badge-yearly { background: #E0E7FF; color: #4338CA; }
+
+  .preview-meta { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px 20px; background: var(--bg-warm); border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); }
+  .preview-meta span strong { color: var(--text); font-weight: 600; }
+
+  .preview-summary { display: flex; gap: 16px; padding: 14px 20px; background: linear-gradient(135deg,#EFF6FF,#F0F9FF); border-top: 1px solid var(--border); font-size: 13px; flex-wrap: wrap; }
+  .summary-item { display: flex; align-items: center; gap: 8px; }
+  .summary-item .s-label { color: var(--text-secondary); font-weight: 500; }
+  .summary-item .s-value { color: var(--primary); font-weight: 700; font-size: 15px; }
+
+  /* ── Buttons ── */
+  .btn { padding: 8px 16px; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .btn-outline { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--bg); color: var(--text); }
+  .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #FECACA; }
+  .btn-danger:hover { background: #FEE2E2; }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 6px rgba(59,130,246,0.25); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-success { background: var(--success); color: #fff; box-shadow: 0 2px 6px rgba(16,185,129,0.25); }
+  .btn-success:hover { background: #059669; }
+  .btn-csv { background: #7C3AED; color: #fff; box-shadow: 0 2px 6px rgba(124,58,237,0.25); }
+  .btn-csv:hover { background: #6D28D9; }
+  .btn-lg { padding: 12px 24px; font-size: 14px; border-radius: var(--radius); }
+
+  .submit-area { display: flex; justify-content: center; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+
+  /* ── Approval Table ── */
+  .approval-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 16px; }
+  .approval-table th, .approval-table td { border: 1px solid #999; padding: 8px 12px; text-align: center; }
+  .approval-table th { background: #F0F0F0; font-weight: 600; font-size: 12px; color: #333; }
+  .approval-table .section-header { background: #1B2A4A; color: #fff; font-weight: 700; font-size: 13px; text-align: left; padding: 10px 16px; }
+  .approval-table .cat-label { background: #F7F8FA; font-weight: 600; text-align: left; padding-left: 20px; }
+  .approval-table .amount-cell { text-align: right; padding-right: 16px; font-weight: 600; }
+  .approval-table .total-row { background: #EFF6FF; font-weight: 700; }
+  .approval-table .total-row td { font-size: 14px; }
+
+  .usage-list-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  .usage-list-table th { background: #334155; color: #fff; font-weight: 600; padding: 8px 6px; text-align: center; font-size: 11px; white-space: nowrap; }
+  .usage-list-table td { border: 1px solid #DDD; padding: 6px 8px; text-align: center; font-size: 12px; }
+  .usage-list-table tbody tr:nth-child(even) { background: #FAFBFC; }
+
+  /* ── Steps ── */
+  .steps { display: flex; gap: 0; margin-bottom: 20px; }
+  .step { flex: 1; text-align: center; padding: 12px 8px; font-size: 12.5px; font-weight: 500; color: var(--text-muted); background: var(--bg-warm); border: 1px solid var(--border); }
+  .step:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .step.done { background: var(--success-bg); color: var(--success); border-color: #A7F3D0; }
+  .step .step-num { display: block; font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+
+  .copy-notice { background: linear-gradient(135deg,#FFF7ED,#FFFBF0); border: 1px solid #FED7AA; border-left: 4px solid var(--warning); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 12px 18px; margin: 12px 0; font-size: 13px; color: #92400E; }
+
+  /* ── Section Display ── */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── Submitted Status ── */
+  .submitted-banner { display: flex; align-items: center; gap: 12px; padding: 16px 24px; background: var(--success-bg); border: 1px solid #A7F3D0; border-radius: var(--radius); margin-bottom: 20px; }
+  .submitted-banner .check { width: 36px; height: 36px; background: var(--success); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .submitted-banner .info { flex: 1; }
+  .submitted-banner .info h4 { font-size: 14px; font-weight: 700; color: #065F46; margin-bottom: 2px; }
+  .submitted-banner .info p { font-size: 12.5px; color: #047857; }
+
+  /* ── Team Status Cards ── */
+  .team-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .team-status-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center; transition: all 0.2s; cursor: pointer; }
+  .team-status-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+  .team-status-card.submitted { border-color: #A7F3D0; background: #F0FDF4; }
+  .team-status-card.not-submitted { border-color: #FECACA; background: #FFF5F5; }
+  .team-status-name { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .team-status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .team-status-badge.done { background: #D1FAE5; color: #065F46; }
+  .team-status-badge.pending { background: #FEE2E2; color: #991B1B; }
+  .team-status-detail { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+
+  /* ── Upload Zone ── */
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-warm); }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+  .upload-zone .upload-icon { font-size: 36px; margin-bottom: 10px; }
+  .upload-zone p { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+
+  /* ── Toast ── */
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: #fff; padding: 12px 24px; border-radius: var(--radius); font-size: 14px; font-weight: 500; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .footer { text-align: center; padding: 28px 24px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 20px; }
+
+  .example-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+  /* ── Team Chips ── */
+  .team-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .team-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); }
+  .team-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .team-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .approval-block { margin-bottom: 28px; }
+  .approval-block-title { font-size: 16px; font-weight: 700; color: var(--primary); padding: 10px 0; margin-bottom: 8px; border-bottom: 2px solid var(--primary); }
+
+  @media (max-width:640px) {
+    .top-header { padding: 0 12px; height: auto; min-height: 48px; flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+    .top-header h1 { font-size: 0.85rem; }
+    .card { padding: 18px; }
+    .team-info-row { grid-template-columns: 1fr; }
+    .method-options { grid-template-columns: 1fr; }
+    .mode-switch { flex-direction: column; }
+    .steps { flex-direction: column; }
+  }
+
+  /* ── Admin Password Modal ── */
+  .pw-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
+  .pw-modal { background: var(--surface); border-radius: var(--radius); padding: 36px 32px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); text-align: center; max-width: 380px; width: 90%; }
+  .pw-modal .pw-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px; }
+  .pw-modal h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .pw-modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+  .pw-modal input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; text-align: center; letter-spacing: 3px; transition: border-color 0.2s; }
+  .pw-modal input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .pw-modal input.pw-error { border-color: var(--danger); animation: shake 0.4s; }
+  .pw-modal .pw-msg { font-size: 12px; color: var(--danger); margin-top: 8px; min-height: 18px; }
+  .pw-modal .pw-btns { display: flex; gap: 8px; margin-top: 16px; }
+  .pw-modal .pw-btns button { flex: 1; padding: 10px; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .pw-modal .pw-cancel { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+  .pw-modal .pw-cancel:hover { background: var(--border-light); }
+  .pw-modal .pw-confirm { background: var(--accent); color: #fff; }
+  .pw-modal .pw-confirm:hover { background: var(--accent-hover); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+
+  /* ── Change Password Message ── */
+  .cp-msg { font-size: 13px; min-height: 20px; padding: 0 2px; transition: all 0.2s; }
+  .cp-msg.cp-error { color: var(--danger); }
+  .cp-msg.cp-success { color: var(--success); }
+</style>
+</head>
+<body>
+
+<!-- ── Admin Password Modal ── -->
+<div class="pw-overlay" id="pwOverlay" style="display:none;">
+  <div class="pw-modal">
+    <div class="pw-icon">🔒</div>
+    <h3>관리자 인증</h3>
+    <p>취합 페이지는 관리자만 접근할 수 있습니다.<br>비밀번호를 입력해 주세요.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호 입력" maxlength="20" autocomplete="off">
+    <div class="pw-msg" id="pwMsg"></div>
+    <div class="pw-btns">
+      <button class="pw-cancel" onclick="closeAdminPw()">취소</button>
+      <button class="pw-confirm" onclick="verifyAdminPw()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Loading ── -->
+<div id="loadingOverlay" style="position:fixed;inset:0;background:rgba(241,245,249,.92);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px;">
+  <div style="width:32px;height:32px;border:3px solid #E2E8F0;border-top-color:#3B82F6;border-radius:50%;animation:spin .7s linear infinite;"></div>
+  <div style="color:#64748B;font-size:0.88rem;font-weight:500;">데이터를 불러오는 중...</div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- ── Header ── -->
+<div class="top-header">
+  <h1>법인카드 고정지출 관리 시스템</h1>
+  <div class="hdr-right">
+    <div class="sync-status" id="syncStatus">
+      <div class="sync-dot online" id="syncDot"></div>
+      <span id="syncText">실시간 연결됨</span>
+    </div>
+    <button class="hdr-btn" onclick="location.reload()">새로고침</button>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ── Mode Switch ── -->
+<div class="mode-switch">
+  <button class="mode-btn active" onclick="switchMode('notice')">공지 사항</button>
+  <button class="mode-btn" onclick="switchMode('staff')">직원 모드 (회신)</button>
+  <button class="mode-btn" onclick="switchMode('admin')">경영관리팀 (취합)</button>
+  <button class="mode-btn" onclick="switchMode('example')">작성 예시</button>
+</div>
+
+<!-- ══════════════════════════ -->
+<!-- MODE: 공지 사항               -->
+<!-- ══════════════════════════ -->
+<div id="mode-notice" class="section active">
+  <div class="card">
+    <div class="card-title"><div class="icon yellow">⚡</div> 변경 사항</div>
+    <div class="notice-text">각 팀에서 발생하는 법인카드 지출 관리의 <strong>투명성과 효율성</strong>을 높이기 위해, 고정 지출에 대한 품의서 작성 방식을 아래와 같이 변경합니다.</div>
+    <div class="change-box">
+      <div class="label">품의 작성 방식 변경</div>
+      <div class="change-arrow">
+        <span class="change-from">최초 1회 품의</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        <span class="change-to">매월 품의서 작성</span>
+      </div>
+    </div>
+    <dl class="info-grid">
+      <dt>대상</dt><dd>각 팀별 법인카드 장기(고정) 지출 건</dd>
+      <dt>시행일</dt><dd><strong>2026년 2월 지출분</strong>부터</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="icon blue">🎯</div> 품의서 작성 목적</div>
+    <div class="notice-text" style="margin-bottom:14px;">단순한 절차 추가가 아닌, <strong>투명한 비용 관리와 효율적인 예산 운영</strong>을 위해 시행합니다.</div>
+    <div class="purpose-list">
+      <div class="purpose-item"><div class="purpose-num">1</div><div><h4>지출 현황 인지 및 공백 방지</h4><p>자동 결제 특성상 담당자 부재 시 지출 내역 파악이 어려운 점을 보완합니다.</p></div></div>
+      <div class="purpose-item"><div class="purpose-num">2</div><div><h4>비용 분석 및 선제적 통제</h4><p>월별 사용 금액을 파악하여 불필요한 고정 지출을 최소화합니다.</p></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="icon green">📝</div> 작성 방법 및 시점</div>
+    <div class="notice-text" style="margin-bottom:12px;">작성 시점은 팀별 상황에 맞춰 <strong>유연하게 선택</strong>하실 수 있습니다.</div>
+    <div class="method-options">
+      <div class="method-opt"><h4>개별 작성</h4><p>해당 카드 지출 시점에 맞춰 건별로 즉시 작성</p></div>
+      <div class="method-opt"><h4>월별 통합 작성</h4><p>월초 또는 특정일을 지정하여 한 달 치 통합 작성</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="icon red">🤝</div> 협조 요청 사항</div>
+    <div class="notice-footer">법인카드는 회사의 소중한 자산인 만큼, 각 <strong>팀장님과 담당자</strong>분들께서는 비용이 어디에, 얼마나 지출되고 있는지 점검해 주시는 계기가 되길 바랍니다.<br><br>궁금하신 점은 <strong>경영관리팀</strong>으로 연락해 주세요.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ -->
+<!-- MODE: 직원 모드 (회신)         -->
+<!-- ══════════════════════════ -->
+<div id="mode-staff" class="section">
+
+  <!-- Team Selector -->
+  <div class="team-selector">
+    <div class="team-selector-title">👤 본인 팀을 선택하세요</div>
+    <div class="team-tabs" id="teamTabs"></div>
+    <div class="quick-join">
+      <span style="font-size:12px;color:var(--text-muted);">팀이 없으신가요?</span>
+      <input type="text" id="newTeamInput" placeholder="새 팀명 입력">
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="addNewTeam()">팀 추가</button>
+    </div>
+  </div>
+
+  <!-- Submitted Banner (shown if already submitted) -->
+  <div id="submittedBanner" style="display:none;"></div>
+
+  <!-- Staff Sub-tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchStaffTab('input')">내역 입력</button>
+    <button class="sub-tab" onclick="switchStaffTab('preview')">미리보기</button>
+    <button class="sub-tab" onclick="switchStaffTab('staffApproval')">품의서 양식 변환</button>
+    <button class="sub-tab" onclick="switchStaffTab('staffCsv')">CSV 다운로드</button>
+  </div>
+
+  <!-- INPUT Tab -->
+  <div id="staffInput" class="section active">
+    <div class="form-header">
+      <h2>고정 지출 내역 작성</h2>
+      <p>아래 양식에 팀의 고정 지출 내역을 작성 후 저장해 주세요. 저장 즉시 경영관리팀에 공유됩니다.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="icon blue">📋</div> 기본 정보</div>
+      <div class="team-info-row">
+        <div class="form-group">
+          <label>작성자 <span class="req">*</span></label>
+          <input type="text" id="staffWriter" placeholder="이름 입력">
+        </div>
+        <div class="form-group">
+          <label>해당 월 <span class="req">*</span></label>
+          <input type="month" id="staffMonth">
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3>월 결제 서비스</h3>
+        <button class="btn btn-outline" onclick="addStaffRow('monthly')">+ 행 추가</button>
+      </div>
+      <div class="table-scroll">
+        <table class="expense-table" id="staffMonthlyTable">
+          <thead><tr>
+            <th style="width:36px">No.</th>
+            <th style="min-width:80px">서비스명</th>
+            <th style="min-width:80px">공급업체</th>
+            <th style="min-width:100px">구매 목적</th>
+            <th style="min-width:80px">이용 플랜</th>
+            <th style="min-width:80px">월 금액</th>
+            <th style="min-width:60px">결제주기</th>
+            <th style="min-width:70px">정기결제일</th>
+            <th style="min-width:80px">사용 부서</th>
+            <th style="min-width:110px">사용 계정</th>
+            <th style="min-width:70px">결제카드<br>(끝4자리)</th>
+            <th style="min-width:60px">비고</th>
+            <th style="width:36px"></th>
+          </tr></thead>
+          <tbody id="staffMonthlyBody">
+            <tr>
+              <td><span class="row-num">1</span></td>
+              <td><input type="text" placeholder="서비스명"></td>
+              <td><input type="text" placeholder="공급업체"></td>
+              <td><input type="text" placeholder="구매 목적"></td>
+              <td><input type="text" placeholder="플랜명"></td>
+              <td><input type="text" placeholder="금액"></td>
+              <td><select><option>월별</option></select></td>
+              <td><input type="text" placeholder="매월 N일"></td>
+              <td><input type="text" placeholder="부서"></td>
+              <td><input type="text" placeholder="이메일"></td>
+              <td><input type="text" placeholder="0000"></td>
+              <td><input type="text" placeholder="-"></td>
+              <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Yearly -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3>연 결제 서비스</h3>
+        <button class="btn btn-outline" onclick="addStaffRow('yearly')">+ 행 추가</button>
+      </div>
+      <div class="table-scroll">
+        <table class="expense-table" id="staffYearlyTable">
+          <thead><tr>
+            <th style="width:36px">No.</th>
+            <th style="min-width:80px">서비스명</th>
+            <th style="min-width:80px">공급업체</th>
+            <th style="min-width:100px">구매 목적</th>
+            <th style="min-width:80px">이용 플랜</th>
+            <th style="min-width:80px">연 금액</th>
+            <th style="min-width:60px">결제주기</th>
+            <th style="min-width:90px">기간</th>
+            <th style="min-width:70px">갱신일</th>
+            <th style="min-width:80px">사용 부서</th>
+            <th style="min-width:110px">사용 계정</th>
+            <th style="min-width:70px">결제카드<br>(끝4자리)</th>
+            <th style="min-width:60px">비고</th>
+            <th style="width:36px"></th>
+          </tr></thead>
+          <tbody id="staffYearlyBody">
+            <tr>
+              <td><span class="row-num">1</span></td>
+              <td><input type="text" placeholder="서비스명"></td>
+              <td><input type="text" placeholder="공급업체"></td>
+              <td><input type="text" placeholder="구매 목적"></td>
+              <td><input type="text" placeholder="플랜명"></td>
+              <td><input type="text" placeholder="금액"></td>
+              <td><select><option>연간</option></select></td>
+              <td><input type="text" placeholder="시작~종료"></td>
+              <td><input type="text" placeholder="갱신일"></td>
+              <td><input type="text" placeholder="부서"></td>
+              <td><input type="text" placeholder="이메일"></td>
+              <td><input type="text" placeholder="0000"></td>
+              <td><input type="text" placeholder="-"></td>
+              <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>추가 전달 사항 (선택)</label>
+        <textarea id="staffNote" placeholder="경영관리팀에 추가로 전달할 사항이 있으시면 작성해 주세요."></textarea>
+      </div>
+    </div>
+
+    <div class="submit-area">
+      <button class="btn btn-outline btn-lg" onclick="resetStaffForm()">초기화</button>
+      <button class="btn btn-primary btn-lg" onclick="saveToFirebase()">💾 저장 (실시간 공유)</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW Tab -->
+  <div id="staffPreview" class="section">
+    <div id="previewContent"></div>
+  </div>
+
+  <!-- STAFF: 품의서 양식 변환 Tab -->
+  <div id="staffApproval" class="section">
+    <div class="copy-notice">
+      <strong>사용 방법:</strong> 아래 생성된 테이블을 <strong>Ctrl+C</strong>로 복사 → 하이웍스 품의서 본문 <strong>[ - 아 래 - ]</strong> 아래에 <strong>Ctrl+V</strong>로 붙여넣기
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon purple">🏢</div> 품의서 기본 설정</div>
+      <div class="team-info-row">
+        <div class="form-group">
+          <label>소속 팀</label>
+          <div id="staffApprovalTeamDisplay" style="padding:9px 14px;background:var(--bg-warm);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:600;color:var(--primary);min-height:40px;display:flex;align-items:center;">팀 미선택</div>
+        </div>
+        <div class="form-group">
+          <label>이용자(사용자)</label>
+          <div id="staffApprovalUserDisplay" style="padding:9px 14px;background:var(--bg-warm);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:500;color:var(--text);min-height:40px;display:flex;align-items:center;">-</div>
+        </div>
+        <div class="form-group">
+          <label>카드사용기간</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="date" id="staffApprovalStart">
+            <span>~</span>
+            <input type="date" id="staffApprovalEnd">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="staffApprovalFormsArea"></div>
+  </div>
+
+  <!-- STAFF: CSV 다운로드 Tab -->
+  <div id="staffCsv" class="section">
+    <div class="card">
+      <div class="card-title"><div class="icon blue">📥</div> CSV 다운로드</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">제출한 내 팀의 고정 지출 내역을 CSV 파일로 다운로드합니다.</p>
+      <div class="submit-area" style="justify-content:flex-start;">
+        <button class="btn btn-primary btn-lg" onclick="downloadMyTeamCSV()">내 팀 CSV 다운로드</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ -->
+<!-- MODE: 경영관리팀 (취합)        -->
+<!-- ══════════════════════════ -->
+<div id="mode-admin" class="section">
+  <div class="form-header">
+    <h2>경영관리팀 — 고정 지출 취합 및 품의서 변환</h2>
+    <p>각 팀에서 실시간으로 입력한 고정 지출 내역을 확인하고, 하이웍스 품의서 양식으로 변환합니다.</p>
+  </div>
+
+  <!-- Team Status Overview -->
+  <div class="card">
+    <div class="card-title"><div class="icon green">📊</div> 팀별 제출 현황</div>
+    <div class="team-status-grid" id="teamStatusGrid"></div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchAdminTab('overview')">팀별 상세 확인</button>
+    <button class="sub-tab" onclick="switchAdminTab('allOverview')">전체 상세 확인</button>
+    <button class="sub-tab" onclick="switchAdminTab('changePw')" style="margin-left:auto;">🔒 비밀번호 변경</button>
+  </div>
+
+  <!-- Overview: 팀별 상세 확인 -->
+  <div id="adminOverview" class="section active">
+    <div class="team-chips" id="adminTeamChips"></div>
+    <div id="adminTeamDetail"></div>
+  </div>
+
+  <!-- Overview: 전체 상세 확인 -->
+  <div id="adminAllOverview" class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:700;color:var(--primary);">📋 전체 팀 고정 지출 내역</div>
+      <button class="btn btn-csv btn-lg" onclick="downloadAllCSV()" style="display:flex;align-items:center;gap:6px;">📥 전체 CSV 다운로드</button>
+    </div>
+    <div id="adminAllDetail"></div>
+  </div>
+
+  <!-- Change Password -->
+  <div id="adminChangePw" class="section">
+    <div class="card" style="max-width:460px;">
+      <div class="card-title"><div class="icon red">🔒</div> 관리자 비밀번호 변경</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">취합 페이지 접근용 비밀번호를 변경합니다.</p>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="form-group">
+          <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">현재 비밀번호</label>
+          <input type="password" id="cpCurrent" placeholder="현재 비밀번호 입력" autocomplete="off" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;">
+        </div>
+        <div class="form-group">
+          <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">새 비밀번호</label>
+          <input type="password" id="cpNew" placeholder="새 비밀번호 입력 (4자 이상)" autocomplete="off" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;">
+        </div>
+        <div class="form-group">
+          <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">새 비밀번호 확인</label>
+          <input type="password" id="cpConfirm" placeholder="새 비밀번호 재입력" autocomplete="off" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;">
+        </div>
+        <div id="cpMsg" class="cp-msg"></div>
+        <button class="btn btn-primary btn-lg" onclick="changeAdminPw()" style="width:100%;justify-content:center;">비밀번호 변경</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ -->
+<!-- MODE: 작성 예시              -->
+<!-- ══════════════════════════ -->
+<div id="mode-example" class="section">
+  <div class="form-header">
+    <h2>별도 작성 예시본</h2>
+    <p>아래는 고정 지출 내역 회신 양식의 작성 예시입니다. 실제 팀 정보를 반영하여 동일한 형식으로 작성해 주세요.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-card-header"><h3>기본 정보 (예시)</h3></div>
+    <div class="preview-meta">
+      <span>팀명: <strong>OO팀</strong></span>
+      <span>작성자: <strong>홍길동</strong></span>
+      <span>작성일: <strong>2026-02-13</strong></span>
+      <span>해당 월: <strong>2026년 2월</strong></span>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-card-header"><h3>월 결제 서비스 (예시)</h3><span class="example-badge badge-monthly">월별 결제</span></div>
+    <div class="table-scroll">
+      <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+      <tbody>
+        <tr><td><span class="row-num">1</span></td><td><strong>SaaS 서비스A</strong></td><td>A사</td><td>업무 생산성 향상</td><td>Standard</td><td><strong>USD 20</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 15일</td><td>OO팀</td><td style="font-size:11px">example@company.com</td><td><span class="card-chip">0000</span></td></tr>
+        <tr><td><span class="row-num">2</span></td><td><strong>클라우드 서비스B</strong></td><td>B사</td><td>데이터 분석</td><td>Pro</td><td><strong>55,000원</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 1일</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">1234</span></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-card-header"><h3>연 결제 서비스 (예시)</h3><span class="example-badge badge-yearly">연간 결제</span></div>
+    <div class="table-scroll">
+      <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+      <tbody>
+        <tr><td><span class="row-num">1</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td><strong>129,000원</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="preview-summary">
+      <div class="summary-item"><span class="s-label">월 결제 총</span><span class="s-value">2건</span></div>
+      <div class="summary-item"><span class="s-label">연 결제 총</span><span class="s-value">1건</span></div>
+    </div>
+  </div>
+  <div class="card" style="text-align:center;padding:20px;">
+    <p style="font-size:14px;color:var(--text-secondary);">위 예시를 참고하여 <strong style="color:var(--accent);cursor:pointer;" onclick="switchMode('staff')">직원 모드 (회신)</strong> 에서 작성해 주세요.</p>
+  </div>
+</div>
+
+</div><!-- container -->
+
+<div class="footer">경영관리팀 · 문의사항은 경영관리팀으로 연락 바랍니다</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════
+//  Firebase 초기화 (연차 시스템과 동일 인스턴스)
+// ══════════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyCzngaCcenhH1tmZ7syugpI3H1wYBVhiJQ",
+  authDomain: "test-168a4.firebaseapp.com",
+  databaseURL: "https://test-168a4-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "test-168a4",
+  storageBucket: "test-168a4.firebasestorage.app",
+  messagingSenderId: "955362696992",
+  appId: "1:955362696992:web:234b098db17412be27c145"
+};
+
+// 같은 페이지에서 연차 시스템과 분리
+let fbApp;
+try { fbApp = firebase.app(); } catch(e) { fbApp = firebase.initializeApp(FB_CONFIG); }
+const fbDb = firebase.database();
+const DB_ROOT = '/corp_card_fixed'; // 법인카드 고정지출 전용 경로
+
+// ══════════════════════════════════
+//  State
+// ══════════════════════════════════
+let currentTeam = null;
+let allTeamsData = {}; // { teamName: { meta, monthly, yearly, submittedAt } }
+let isSaving = false;
+let adminUnlocked = false; // 관리자 인증 상태
+let adminPw = 'netform2026'; // 기본 비밀번호 (Firebase에서 덮어씀)
+const PW_DB_PATH = '/corp_card_fixed_settings/adminPassword';
+
+// Firebase에서 비밀번호 로드
+function loadAdminPw() {
+  fbDb.ref(PW_DB_PATH).once('value').then(snap => {
+    if (snap.val()) adminPw = snap.val();
+  });
+}
+
+// ══════════════════════════════════
+//  Admin Password
+// ══════════════════════════════════
+function showAdminPw() {
+  document.getElementById('pwOverlay').style.display = 'flex';
+  const inp = document.getElementById('pwInput');
+  inp.value = '';
+  document.getElementById('pwMsg').textContent = '';
+  inp.classList.remove('pw-error');
+  setTimeout(() => inp.focus(), 100);
+}
+function closeAdminPw() {
+  document.getElementById('pwOverlay').style.display = 'none';
+}
+function verifyAdminPw() {
+  const inp = document.getElementById('pwInput');
+  if (inp.value === adminPw) {
+    adminUnlocked = true;
+    closeAdminPw();
+    switchMode('admin');
+  } else {
+    inp.classList.add('pw-error');
+    document.getElementById('pwMsg').textContent = '비밀번호가 올바르지 않습니다.';
+    inp.value = '';
+    setTimeout(() => inp.classList.remove('pw-error'), 400);
+  }
+}
+
+// 비밀번호 변경
+function changeAdminPw() {
+  const curPw = document.getElementById('cpCurrent').value;
+  const newPw = document.getElementById('cpNew').value;
+  const confirmPw = document.getElementById('cpConfirm').value;
+  const msgEl = document.getElementById('cpMsg');
+
+  msgEl.className = 'cp-msg';
+  if (!curPw || !newPw || !confirmPw) { msgEl.textContent = '모든 항목을 입력해 주세요.'; msgEl.classList.add('cp-error'); return; }
+  if (curPw !== adminPw) { msgEl.textContent = '현재 비밀번호가 일치하지 않습니다.'; msgEl.classList.add('cp-error'); return; }
+  if (newPw.length < 4) { msgEl.textContent = '새 비밀번호는 4자 이상이어야 합니다.'; msgEl.classList.add('cp-error'); return; }
+  if (newPw !== confirmPw) { msgEl.textContent = '새 비밀번호가 일치하지 않습니다.'; msgEl.classList.add('cp-error'); return; }
+  if (curPw === newPw) { msgEl.textContent = '현재 비밀번호와 다른 비밀번호를 입력해 주세요.'; msgEl.classList.add('cp-error'); return; }
+
+  fbDb.ref(PW_DB_PATH).set(newPw).then(() => {
+    adminPw = newPw;
+    document.getElementById('cpCurrent').value = '';
+    document.getElementById('cpNew').value = '';
+    document.getElementById('cpConfirm').value = '';
+    msgEl.textContent = '비밀번호가 성공적으로 변경되었습니다.';
+    msgEl.classList.add('cp-success');
+  }).catch(err => {
+    msgEl.textContent = '저장 오류: ' + err.message;
+    msgEl.classList.add('cp-error');
+  });
+}
+
+// Enter 키로 확인
+document.addEventListener('DOMContentLoaded', () => {
+  const pwInp = document.getElementById('pwInput');
+  if (pwInp) pwInp.addEventListener('keydown', e => { if (e.key === 'Enter') verifyAdminPw(); });
+});
+
+// ══════════════════════════════════
+//  Mode Switch
+// ══════════════════════════════════
+function switchMode(mode) {
+  if (mode === 'admin' && !adminUnlocked) { showAdminPw(); return; }
+  const modes = ['notice','staff','admin','example'];
+  document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', modes[i] === mode));
+  modes.forEach(m => {
+    const el = document.getElementById('mode-' + m);
+    if (el) { el.classList.toggle('active', m === mode); }
+  });
+  if (mode === 'admin') renderAdminView();
+  if (mode === 'staff' && currentTeam) loadTeamDataToForm();
+}
+
+function switchStaffTab(tab) {
+  const tabMap = ['input','preview','staffApproval','staffCsv'];
+  document.querySelectorAll('#mode-staff .sub-tab').forEach((b, i) => b.classList.toggle('active', tabMap[i] === tab));
+  ['staffInput','staffPreview','staffApproval','staffCsv'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', id === (tab === 'input' ? 'staffInput' : tab === 'preview' ? 'staffPreview' : tab));
+  });
+  if (tab === 'preview') renderStaffPreview();
+  if (tab === 'staffApproval') renderStaffApprovalForm();
+}
+
+function switchAdminTab(tab) {
+  const tabs = ['overview','allOverview','changePw'];
+  document.querySelectorAll('#mode-admin .sub-tab').forEach((b, i) => b.classList.toggle('active', tabs[i] === tab));
+  tabs.forEach(t => {
+    const el = document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.classList.toggle('active', t === tab);
+  });
+  if (tab === 'allOverview') renderAdminAllDetail();
+}
+
+// ══════════════════════════════════
+//  Firebase Realtime Sync
+// ══════════════════════════════════
+function initFirebase() {
+  loadAdminPw(); // 관리자 비밀번호 로드
+  // Listen for all team data changes
+  fbDb.ref(DB_ROOT).on('value', snapshot => {
+    if (isSaving) return;
+    const data = snapshot.val();
+    allTeamsData = data || {};
+    renderTeamTabs();
+    renderTeamStatusForAdmin();
+    // If on staff mode and team selected, check if data changed
+    if (currentTeam && allTeamsData[currentTeam]) {
+      updateSubmittedBanner();
+    }
+    // Hide loading
+    const lo = document.getElementById('loadingOverlay');
+    if (lo) lo.style.display = 'none';
+  });
+
+  // Connection status
+  fbDb.ref('.info/connected').on('value', snap => {
+    const dot = document.getElementById('syncDot');
+    const txt = document.getElementById('syncText');
+    if (snap.val()) {
+      dot.className = 'sync-dot online';
+      txt.textContent = '실시간 연결됨';
+    } else {
+      dot.className = 'sync-dot offline';
+      txt.textContent = '오프라인';
+    }
+  });
+}
+
+// ══════════════════════════════════
+//  Team Management
+// ══════════════════════════════════
+function renderTeamTabs() {
+  const container = document.getElementById('teamTabs');
+  const teams = Object.keys(allTeamsData);
+
+  // Restore last selected team from localStorage
+  const savedTeam = localStorage.getItem('cc_fixed_team');
+  if (savedTeam && allTeamsData[savedTeam]) {
+    currentTeam = savedTeam;
+  } else if (!currentTeam && teams.length > 0) {
+    currentTeam = teams[0];
+  }
+
+  const teamColors = ['#3b82f6','#10b981','#ec4899','#f59e0b','#8b5cf6','#06b6d4','#f97316','#22c55e','#a855f7','#f43f5e'];
+
+  container.innerHTML = teams.map((t, i) => {
+    const d = allTeamsData[t];
+    const count = (d.monthly ? Object.keys(d.monthly).length : 0) + (d.yearly ? Object.keys(d.yearly).length : 0);
+    const color = teamColors[i % teamColors.length];
+    return `<div class="team-tab ${t === currentTeam ? 'active' : ''}" onclick="selectTeam('${t}')">
+      <div class="team-dot" style="background:${color}"></div>
+      <span>${t}</span>
+      <span class="team-count">${count}건</span>
+    </div>`;
+  }).join('');
+}
+
+function selectTeam(teamName) {
+  currentTeam = teamName;
+  localStorage.setItem('cc_fixed_team', teamName);
+  renderTeamTabs();
+  loadTeamDataToForm();
+  updateSubmittedBanner();
+}
+
+function addNewTeam() {
+  const input = document.getElementById('newTeamInput');
+  const name = input.value.trim();
+  if (!name) { showToast('팀명을 입력해 주세요.'); return; }
+  if (allTeamsData[name]) {
+    selectTeam(name);
+    input.value = '';
+    showToast(name + ' 팀이 선택되었습니다.');
+    return;
+  }
+  // Create empty team in Firebase
+  isSaving = true;
+  fbDb.ref(DB_ROOT + '/' + name).set({
+    meta: { team: name, writer: '', month: '', submittedAt: '' },
+    monthly: {},
+    yearly: {}
+  }).then(() => {
+    isSaving = false;
+    selectTeam(name);
+    input.value = '';
+    showToast(name + ' 팀이 추가되었습니다!');
+  }).catch(err => {
+    isSaving = false;
+    showToast('오류: ' + err.message);
+  });
+}
+
+document.getElementById('newTeamInput').addEventListener('keypress', e => { if (e.key === 'Enter') addNewTeam(); });
+
+// ══════════════════════════════════
+//  Staff: Load/Save
+// ══════════════════════════════════
+function loadTeamDataToForm() {
+  if (!currentTeam || !allTeamsData[currentTeam]) return;
+  const data = allTeamsData[currentTeam];
+
+  // Meta
+  if (data.meta) {
+    document.getElementById('staffWriter').value = data.meta.writer || '';
+    document.getElementById('staffMonth').value = data.meta.month || '';
+    document.getElementById('staffNote').value = data.meta.note || '';
+  }
+
+  // Monthly
+  const mBody = document.getElementById('staffMonthlyBody');
+  mBody.innerHTML = '';
+  const monthly = data.monthly ? Object.values(data.monthly) : [];
+  if (monthly.length === 0) monthly.push({});
+  monthly.forEach((r, i) => addStaffRowWithData('monthly', r, i + 1));
+
+  // Yearly
+  const yBody = document.getElementById('staffYearlyBody');
+  yBody.innerHTML = '';
+  const yearly = data.yearly ? Object.values(data.yearly) : [];
+  if (yearly.length === 0) yearly.push({});
+  yearly.forEach((r, i) => addStaffRowWithData('yearly', r, i + 1));
+}
+
+function editTeamData() {
+  loadTeamDataToForm();
+  switchStaffTab('input');
+  setTimeout(() => {
+    document.getElementById('staffInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+  showToast('수정 모드로 전환되었습니다. 내용을 수정 후 저장해 주세요.');
+}
+
+function addStaffRowWithData(type, data, num) {
+  const tbody = document.getElementById(type === 'monthly' ? 'staffMonthlyBody' : 'staffYearlyBody');
+  const d = data || {};
+
+  if (type === 'monthly') {
+    tbody.insertAdjacentHTML('beforeend', `<tr>
+      <td><span class="row-num">${num}</span></td>
+      <td><input type="text" placeholder="서비스명" value="${d.service||''}"></td>
+      <td><input type="text" placeholder="공급업체" value="${d.vendor||''}"></td>
+      <td><input type="text" placeholder="구매 목적" value="${d.purpose||''}"></td>
+      <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
+      <td><input type="text" placeholder="금액" value="${d.amount||''}"></td>
+      <td><select><option ${d.cycle==='월별'?'selected':''}>월별</option></select></td>
+      <td><input type="text" placeholder="매월 N일" value="${d.payDate||''}"></td>
+      <td><input type="text" placeholder="부서" value="${d.dept||''}"></td>
+      <td><input type="text" placeholder="이메일" value="${d.account||''}"></td>
+      <td><input type="text" placeholder="0000" value="${d.card||''}"></td>
+      <td><input type="text" placeholder="-" value="${d.note||''}"></td>
+      <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
+    </tr>`);
+  } else {
+    tbody.insertAdjacentHTML('beforeend', `<tr>
+      <td><span class="row-num">${num}</span></td>
+      <td><input type="text" placeholder="서비스명" value="${d.service||''}"></td>
+      <td><input type="text" placeholder="공급업체" value="${d.vendor||''}"></td>
+      <td><input type="text" placeholder="구매 목적" value="${d.purpose||''}"></td>
+      <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
+      <td><input type="text" placeholder="금액" value="${d.amount||''}"></td>
+      <td><select><option ${d.cycle==='연간'?'selected':''}>연간</option></select></td>
+      <td><input type="text" placeholder="시작~종료" value="${d.period||''}"></td>
+      <td><input type="text" placeholder="갱신일" value="${d.renewDate||''}"></td>
+      <td><input type="text" placeholder="부서" value="${d.dept||''}"></td>
+      <td><input type="text" placeholder="이메일" value="${d.account||''}"></td>
+      <td><input type="text" placeholder="0000" value="${d.card||''}"></td>
+      <td><input type="text" placeholder="-" value="${d.note||''}"></td>
+      <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
+    </tr>`);
+  }
+}
+
+function addStaffRow(type) {
+  const tbody = document.getElementById(type === 'monthly' ? 'staffMonthlyBody' : 'staffYearlyBody');
+  addStaffRowWithData(type, {}, tbody.rows.length + 1);
+  showToast('행이 추가되었습니다.');
+}
+
+function removeStaffRow(btn) {
+  const row = btn.closest('tr');
+  const tbody = row.parentNode;
+  if (tbody.rows.length <= 1) { showToast('최소 1행은 유지해야 합니다.'); return; }
+  row.remove();
+  Array.from(tbody.rows).forEach((r, i) => { const rn = r.querySelector('.row-num'); if (rn) rn.textContent = i + 1; });
+}
+
+function collectStaffData() {
+  const meta = {
+    team: currentTeam,
+    writer: document.getElementById('staffWriter').value.trim(),
+    month: document.getElementById('staffMonth').value,
+    note: document.getElementById('staffNote').value.trim(),
+    submittedAt: new Date().toISOString()
+  };
+
+  const monthly = {};
+  let mIdx = 0;
+  for (const row of document.getElementById('staffMonthlyBody').rows) {
+    const inputs = row.querySelectorAll('input');
+    const sel = row.querySelector('select');
+    if (inputs[0]?.value.trim()) {
+      monthly['m' + mIdx] = {
+        service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
+        purpose: inputs[2].value.trim(), plan: inputs[3].value.trim(),
+        amount: inputs[4].value.trim(), cycle: sel ? sel.value : '월별',
+        payDate: inputs[5].value.trim(), dept: inputs[6].value.trim(),
+        account: inputs[7].value.trim(), card: inputs[8].value.trim(),
+        note: inputs[9].value.trim()
+      };
+      mIdx++;
+    }
+  }
+
+  const yearly = {};
+  let yIdx = 0;
+  for (const row of document.getElementById('staffYearlyBody').rows) {
+    const inputs = row.querySelectorAll('input');
+    const sel = row.querySelector('select');
+    if (inputs[0]?.value.trim()) {
+      yearly['y' + yIdx] = {
+        service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
+        purpose: inputs[2].value.trim(), plan: inputs[3].value.trim(),
+        amount: inputs[4].value.trim(), cycle: sel ? sel.value : '연간',
+        period: inputs[5].value.trim(), renewDate: inputs[6].value.trim(),
+        dept: inputs[7].value.trim(), account: inputs[8].value.trim(),
+        card: inputs[9].value.trim(), note: inputs[10].value.trim()
+      };
+      yIdx++;
+    }
+  }
+
+  return { meta, monthly, yearly };
+}
+
+function saveToFirebase() {
+  if (!currentTeam) { showToast('팀을 먼저 선택해 주세요.'); return; }
+  const { meta, monthly, yearly } = collectStaffData();
+
+  if (Object.keys(monthly).length === 0 && Object.keys(yearly).length === 0) {
+    showToast('서비스명을 1건 이상 입력해 주세요.'); return;
+  }
+
+  isSaving = true;
+  fbDb.ref(DB_ROOT + '/' + currentTeam).set({ meta, monthly, yearly }).then(() => {
+    isSaving = false;
+    showToast('저장 완료! 경영관리팀에 실시간으로 공유되었습니다.');
+    updateSubmittedBanner();
+  }).catch(err => {
+    isSaving = false;
+    showToast('저장 오류: ' + err.message);
+  });
+}
+
+function updateSubmittedBanner() {
+  const banner = document.getElementById('submittedBanner');
+  if (!currentTeam || !allTeamsData[currentTeam]) { banner.style.display = 'none'; return; }
+  const data = allTeamsData[currentTeam];
+  const mCount = data.monthly ? Object.keys(data.monthly).length : 0;
+  const yCount = data.yearly ? Object.keys(data.yearly).length : 0;
+  if (mCount > 0 || yCount > 0) {
+    const submittedAt = data.meta?.submittedAt ? new Date(data.meta.submittedAt).toLocaleString('ko-KR') : '';
+    banner.style.display = 'flex';
+    banner.className = 'submitted-banner';
+    banner.innerHTML = `<div class="check">✓</div><div class="info"><h4>${currentTeam} — 제출 완료</h4><p>월 ${mCount}건, 연 ${yCount}건 등록됨${submittedAt ? ' · 최종 저장: ' + submittedAt : ''}</p></div>
+      <button class="btn btn-outline" onclick="editTeamData()">수정하기</button>`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function resetStaffForm() {
+  if (!confirm('입력한 내용을 모두 초기화하시겠습니까?')) return;
+  ['staffWriter','staffMonth','staffNote'].forEach(id => document.getElementById(id).value = '');
+  ['staffMonthlyBody','staffYearlyBody'].forEach(id => {
+    const tbody = document.getElementById(id);
+    tbody.innerHTML = '';
+    addStaffRowWithData(id.includes('Monthly') ? 'monthly' : 'yearly', {}, 1);
+  });
+  showToast('초기화 완료');
+}
+
+// ══════════════════════════════════
+//  Staff: Preview
+// ══════════════════════════════════
+function renderStaffPreview() {
+  const { meta, monthly, yearly } = collectStaffData();
+  const area = document.getElementById('previewContent');
+  const mArr = Object.values(monthly);
+  const yArr = Object.values(yearly);
+
+  let html = `<div class="table-card">
+    <div class="table-card-header"><h3>미리보기 — ${currentTeam || '팀 미선택'}</h3></div>
+    <div class="preview-meta">
+      <span>팀명: <strong>${currentTeam || '-'}</strong></span>
+      <span>작성자: <strong>${meta.writer || '-'}</strong></span>
+      <span>해당 월: <strong>${meta.month || '-'}</strong></span>
+    </div></div>`;
+
+  if (mArr.length > 0) {
+    html += `<div class="table-card"><div class="table-card-header"><h3>월 결제 서비스</h3><span class="example-badge badge-monthly">${mArr.length}건</span></div>
+      <div class="table-scroll"><table class="preview-table"><thead><tr>
+        <th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th>
+        <th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th>
+      </tr></thead><tbody>`;
+    mArr.forEach((r, i) => {
+      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-monthly">${r.cycle}</span></td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+  }
+
+  if (yArr.length > 0) {
+    html += `<div class="table-card"><div class="table-card-header"><h3>연 결제 서비스</h3><span class="example-badge badge-yearly">${yArr.length}건</span></div>
+      <div class="table-scroll"><table class="preview-table"><thead><tr>
+        <th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th>
+        <th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th>
+      </tr></thead><tbody>`;
+    yArr.forEach((r, i) => {
+      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-yearly">${r.cycle}</span></td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+// ══════════════════════════════════
+//  Admin: Overview
+// ══════════════════════════════════
+let adminCurrentTeam = null;
+
+function renderTeamStatusForAdmin() {
+  const grid = document.getElementById('teamStatusGrid');
+  if (!grid) return;
+  const teams = Object.keys(allTeamsData);
+  grid.innerHTML = teams.map(t => {
+    const d = allTeamsData[t];
+    const mCount = d.monthly ? Object.keys(d.monthly).length : 0;
+    const yCount = d.yearly ? Object.keys(d.yearly).length : 0;
+    const submitted = mCount > 0 || yCount > 0;
+    return `<div class="team-status-card ${submitted ? 'submitted' : 'not-submitted'}" onclick="adminSelectTeam('${t}')">
+      <div class="team-status-name">${t}</div>
+      <div class="team-status-badge ${submitted ? 'done' : 'pending'}">${submitted ? '제출 완료' : '미제출'}</div>
+      <div class="team-status-detail">${submitted ? `월 ${mCount}건, 연 ${yCount}건` : '대기 중'}</div>
+    </div>`;
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">아직 등록된 팀이 없습니다.</div>';
+}
+
+function renderAdminView() {
+  renderTeamStatusForAdmin();
+  renderAdminTeamChips();
+}
+
+function renderAdminTeamChips() {
+  const teams = Object.keys(allTeamsData);
+  ['adminTeamChips'].forEach(containerId => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = teams.map((t, i) => {
+      return `<div class="team-chip ${t === adminCurrentTeam ? 'active' : ''}" onclick="adminSelectTeam('${t}')">${t}</div>`;
+    }).join('');
+  });
+  if (!adminCurrentTeam && teams.length > 0) {
+    adminCurrentTeam = teams[0];
+    renderAdminTeamDetail();
+  }
+}
+
+function adminSelectTeam(team) {
+  adminCurrentTeam = team;
+  renderAdminTeamChips();
+  renderAdminTeamDetail();
+}
+
+function renderAdminTeamDetail() {
+  if (!adminCurrentTeam || !allTeamsData[adminCurrentTeam]) return;
+  const area = document.getElementById('adminTeamDetail');
+  const data = allTeamsData[adminCurrentTeam];
+  const mArr = data.monthly ? Object.values(data.monthly) : [];
+  const yArr = data.yearly ? Object.values(data.yearly) : [];
+
+  let html = `<div class="table-card"><div class="table-card-header"><h3>${adminCurrentTeam} 상세</h3>
+      <button class="btn btn-csv" onclick="downloadCurrentTeamCSV()" style="display:flex;align-items:center;gap:5px;font-size:12px;">📥 ${adminCurrentTeam} CSV 다운로드</button>
+    </div>
+    <div class="preview-meta">
+      <span>작성자: <strong>${data.meta?.writer||'-'}</strong></span>
+      <span>해당 월: <strong>${data.meta?.month||'-'}</strong></span>
+      <span>최종 저장: <strong>${data.meta?.submittedAt ? new Date(data.meta.submittedAt).toLocaleString('ko-KR') : '-'}</strong></span>
+    </div></div>`;
+
+  if (mArr.length > 0) {
+    html += `<div class="table-card"><div class="table-card-header"><h3>월 결제 — ${adminCurrentTeam}</h3><span class="example-badge badge-monthly">${mArr.length}건</span></div>
+      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+    mArr.forEach((r, i) => {
+      html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+  }
+
+  if (yArr.length > 0) {
+    html += `<div class="table-card"><div class="table-card-header"><h3>연 결제 — ${adminCurrentTeam}</h3><span class="example-badge badge-yearly">${yArr.length}건</span></div>
+      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+    yArr.forEach((r, i) => {
+      html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+  }
+
+  if (mArr.length === 0 && yArr.length === 0) {
+    html += `<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">이 팀은 아직 데이터를 입력하지 않았습니다.</div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+// ══════════════════════════════════
+//  Admin: 전체 상세 확인
+// ══════════════════════════════════
+function renderAdminAllDetail() {
+  const area = document.getElementById('adminAllDetail');
+  const teams = Object.keys(allTeamsData);
+  if (teams.length === 0) {
+    area.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">아직 등록된 팀이 없습니다.</div>';
+    return;
+  }
+
+  let html = '';
+  let grandMonthly = 0, grandYearly = 0, grandTotal = 0;
+
+  teams.forEach(teamName => {
+    const data = allTeamsData[teamName];
+    const mArr = data.monthly ? Object.values(data.monthly) : [];
+    const yArr = data.yearly ? Object.values(data.yearly) : [];
+    if (mArr.length === 0 && yArr.length === 0) return;
+
+    const safeTeam = teamName.replace(/\s/g,'_');
+    let teamMonthlyTotal = 0, teamYearlyTotal = 0;
+
+    html += `<div class="table-card" style="margin-bottom:24px;">
+      <div class="table-card-header" style="border-bottom:2px solid var(--primary);">
+        <h3 style="font-size:15px;">🏢 ${teamName}</h3>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="preview-meta" style="margin:0;"><span>작성자: <strong>${data.meta?.writer||'-'}</strong></span> · <span>해당 월: <strong>${data.meta?.month||'-'}</strong></span></span>
+          <button class="btn btn-csv" onclick="adminDownloadTeamCSV('${teamName}')" style="font-size:11px;padding:5px 12px;">📥 CSV</button>
+        </div>
+      </div>`;
+
+    if (mArr.length > 0) {
+      html += `<div style="padding:0 16px;"><div style="font-size:13px;font-weight:600;color:var(--accent);padding:12px 0 6px;display:flex;align-items:center;gap:6px;">월 결제 서비스 <span class="example-badge badge-monthly">${mArr.length}건</span></div>
+        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+      mArr.forEach((r, i) => {
+        const amt = parseAmount(r.amount); teamMonthlyTotal += amt;
+        html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      });
+      html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="5" style="text-align:center;">월 결제 소계</td><td colspan="7" style="text-align:left;padding-left:8px;">${formatNumber(teamMonthlyTotal)}</td></tr>`;
+      html += `</tbody></table></div></div>`;
+    }
+
+    if (yArr.length > 0) {
+      html += `<div style="padding:0 16px;"><div style="font-size:13px;font-weight:600;color:#8B5CF6;padding:12px 0 6px;display:flex;align-items:center;gap:6px;">연 결제 서비스 <span class="example-badge badge-yearly">${yArr.length}건</span></div>
+        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+      yArr.forEach((r, i) => {
+        const amt = parseAmount(r.amount); teamYearlyTotal += amt;
+        html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      });
+      html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="5" style="text-align:center;">연 결제 소계</td><td colspan="8" style="text-align:left;padding-left:8px;">${formatNumber(teamYearlyTotal)}</td></tr>`;
+      html += `</tbody></table></div></div>`;
+    }
+
+    const teamTotal = teamMonthlyTotal + teamYearlyTotal;
+    html += `<div style="padding:12px 16px;background:var(--bg-warm);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+      <span style="color:var(--text-secondary);">월 ${mArr.length}건 · 연 ${yArr.length}건</span>
+      <span style="font-weight:700;color:var(--primary);font-size:14px;">${teamName} 합계: ${formatNumber(teamTotal)}</span>
+    </div></div>`;
+
+    grandMonthly += teamMonthlyTotal;
+    grandYearly += teamYearlyTotal;
+    grandTotal += teamTotal;
+  });
+
+  // 전체 총계 요약
+  if (grandTotal > 0) {
+    html = `<div class="card" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;">
+        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">월 결제 합계</div><div style="font-size:20px;font-weight:700;">${formatNumber(grandMonthly)}</div></div>
+        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">연 결제 합계</div><div style="font-size:20px;font-weight:700;">${formatNumber(grandYearly)}</div></div>
+        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">전체 합계</div><div style="font-size:22px;font-weight:800;">${formatNumber(grandTotal)}</div></div>
+      </div>
+    </div>` + html;
+  }
+
+  area.innerHTML = html || '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">제출된 데이터가 없습니다.</div>';
+}
+
+function adminDownloadTeamCSV(teamName) {
+  const csv = buildCSVForTeam(teamName);
+  if (csv) {
+    const month = allTeamsData[teamName]?.meta?.month?.replace('-','') || 'YYYYMM';
+    downloadBlobFile(csv, `법인카드_고정지출_${teamName}_${month}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`${teamName} CSV 다운로드 완료`);
+  } else {
+    showToast('해당 팀 데이터가 없습니다.');
+  }
+}
+
+// ══════════════════════════════════
+//  Admin: Approval Form
+// ══════════════════════════════════
+function renderApprovalView() {
+  renderAdminTeamChips();
+  if (adminCurrentTeam) renderApprovalForTeam(adminCurrentTeam);
+}
+
+function parseAmount(str) { return parseFloat((str||'').replace(/[^0-9.-]/g,'')) || 0; }
+function formatNumber(num) { return num.toLocaleString('ko-KR'); }
+
+// ══════════════════════════════════
+//  Staff: 품의서 양식 변환
+// ══════════════════════════════════
+function renderStaffApprovalForm() {
+  const area = document.getElementById('staffApprovalFormsArea');
+  // 자동으로 선택된 팀/작성자 정보 표시
+  const teamDisplay = document.getElementById('staffApprovalTeamDisplay');
+  const userDisplay = document.getElementById('staffApprovalUserDisplay');
+  if (teamDisplay) teamDisplay.textContent = currentTeam || '팀 미선택';
+  const writerName = document.getElementById('staffWriter')?.value?.trim() || '';
+  if (userDisplay) userDisplay.textContent = currentTeam ? (writerName || currentTeam) : '-';
+
+  if (!currentTeam) { area.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">먼저 팀을 선택해 주세요.</div>'; return; }
+  if (!allTeamsData[currentTeam]) { area.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">제출된 데이터가 없습니다. 먼저 내역을 입력하고 저장해 주세요.</div>'; return; }
+
+  const data = allTeamsData[currentTeam];
+  const user = writerName || currentTeam;
+  const ps = document.getElementById('staffApprovalStart').value || '';
+  const pe = document.getElementById('staffApprovalEnd').value || '';
+  const period = ps && pe ? `${ps} ~ ${pe}` : '기간 미설정';
+
+  let totalAmount = 0;
+  const allItems = [];
+
+  (data.monthly ? Object.values(data.monthly) : []).forEach(r => {
+    const amt = parseAmount(r.amount); totalAmount += amt;
+    allItems.push({ ...r, amountNum: amt, type: 'monthly' });
+  });
+  (data.yearly ? Object.values(data.yearly) : []).forEach(r => {
+    const amt = parseAmount(r.amount); totalAmount += amt;
+    allItems.push({ ...r, amountNum: amt, type: 'yearly' });
+  });
+
+  if (allItems.length === 0) { area.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">등록된 지출 내역이 없습니다.</div>'; return; }
+
+  const safeTeam = currentTeam.replace(/\s/g,'_');
+
+  let html = `<div class="approval-block" id="staffApprovalBlock_${safeTeam}">
+    <div class="approval-block-title">${currentTeam} — 법인카드 사용 품의서</div>
+    <div class="table-card" style="overflow:visible;">
+      <div class="table-card-header"><h3>품의서 작성 활용 양식</h3>
+        <button class="btn btn-primary" onclick="copyTable('staffAppTable_${safeTeam}')">테이블 복사</button>
+      </div>
+      <div style="padding:16px;">
+        <table class="approval-table" id="staffAppTable_${safeTeam}">
+          <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
+          <thead><tr><th colspan="4" style="background:#1B2A4A;color:#fff;font-size:15px;padding:14px;">법인카드 사용 품의서</th></tr></thead>
+          <tbody>
+            <tr><td class="cat-label">1. 사용자</td><td colspan="3">${user}</td></tr>
+            <tr><td class="cat-label">2. 카드사용기간</td><td colspan="3">${period}</td></tr>
+            <tr><td colspan="4" class="section-header">3. 사용 상세금액</td></tr>
+            <tr><td class="cat-label">기타 (고정지출)</td><td class="amount-cell" colspan="3">${formatNumber(totalAmount)}</td></tr>
+            <tr class="total-row"><td style="font-weight:700;">합계</td><td class="amount-cell" colspan="3">${formatNumber(totalAmount)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="table-card" style="overflow:visible;">
+      <div class="table-card-header"><h3>법인카드 사용내역 리스트</h3>
+        <button class="btn btn-primary" onclick="copyTable('staffUsageTable_${safeTeam}')">테이블 복사</button>
+      </div>
+      <div style="padding:16px;">
+        <table class="usage-list-table" id="staffUsageTable_${safeTeam}">
+          <thead><tr><th>번호</th><th>서비스명</th><th>공급업체</th><th>합계</th><th>결제주기</th><th>결제일/기간</th><th>결제카드</th><th>지출분류</th><th>사용내역</th></tr></thead>
+          <tbody>`;
+  allItems.forEach((it, idx) => {
+    const dp = it.type === 'monthly' ? (it.payDate||'') : (it.period||'');
+    html += `<tr><td>${idx+1}</td><td style="text-align:left;padding-left:8px;font-weight:600;">${it.service}</td><td>${it.vendor||''}</td><td style="text-align:right;padding-right:8px;font-weight:600;">${it.amount}</td><td>${it.cycle||''}</td><td>${dp}</td><td>${it.card||''}</td><td>기타</td><td style="text-align:left;padding-left:8px;">${it.purpose||''}</td></tr>`;
+  });
+  html += `</tbody><tfoot><tr style="background:#EFF6FF;font-weight:700;"><td colspan="3" style="border:1px solid #999;padding:10px;text-align:center;">합계</td><td style="border:1px solid #999;text-align:right;padding-right:8px;">${formatNumber(totalAmount)}</td><td colspan="5" style="border:1px solid #999;"></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>`;
+
+  area.innerHTML = html;
+}
+
+// ══════════════════════════════════
+//  Staff: CSV 다운로드
+// ══════════════════════════════════
+function downloadMyTeamCSV() {
+  if (!currentTeam) { showToast('먼저 팀을 선택해 주세요.'); return; }
+  const csv = buildCSVForTeam(currentTeam);
+  if (csv) {
+    const month = allTeamsData[currentTeam]?.meta?.month?.replace('-','') || 'YYYYMM';
+    downloadBlobFile(csv, `법인카드_고정지출_${currentTeam}_${month}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`${currentTeam} CSV 다운로드 완료`);
+  } else {
+    showToast('제출된 데이터가 없습니다. 먼저 내역을 입력하고 저장해 주세요.');
+  }
+}
+
+function renderApprovalForTeam(teamName) {
+  const area = document.getElementById('approvalFormsArea');
+  if (!allTeamsData[teamName]) { area.innerHTML = ''; return; }
+  const data = allTeamsData[teamName];
+  const user = document.getElementById('approvalUser').value.trim() || '본사';
+  const ps = document.getElementById('approvalStart').value || '';
+  const pe = document.getElementById('approvalEnd').value || '';
+  const period = ps && pe ? `${ps} ~ ${pe}` : '기간 미설정';
+
+  let totalAmount = 0;
+  const allItems = [];
+
+  (data.monthly ? Object.values(data.monthly) : []).forEach(r => {
+    const amt = parseAmount(r.amount); totalAmount += amt;
+    allItems.push({ ...r, amountNum: amt, type: 'monthly' });
+  });
+  (data.yearly ? Object.values(data.yearly) : []).forEach(r => {
+    const amt = parseAmount(r.amount); totalAmount += amt;
+    allItems.push({ ...r, amountNum: amt, type: 'yearly' });
+  });
+
+  const safeTeam = teamName.replace(/\s/g,'_');
+
+  let html = `<div class="approval-block" id="approvalBlock_${safeTeam}">
+    <div class="approval-block-title">${teamName} — 법인카드 사용 품의서</div>
+    <div class="table-card" style="overflow:visible;">
+      <div class="table-card-header"><h3>품의서 작성 활용 양식</h3>
+        <button class="btn btn-primary" onclick="copyTable('appTable_${safeTeam}')">테이블 복사</button>
+      </div>
+      <div style="padding:16px;">
+        <table class="approval-table" id="appTable_${safeTeam}">
+          <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
+          <thead><tr><th colspan="4" style="background:#1B2A4A;color:#fff;font-size:15px;padding:14px;">법인카드 사용 품의서</th></tr></thead>
+          <tbody>
+            <tr><td class="cat-label">1. 사용자</td><td colspan="3">${user}</td></tr>
+            <tr><td class="cat-label">2. 카드사용기간</td><td colspan="3">${period}</td></tr>
+            <tr><td colspan="4" class="section-header">3. 사용 상세금액</td></tr>
+            <tr><td class="cat-label">기타 (고정지출)</td><td class="amount-cell" colspan="3">${formatNumber(totalAmount)}</td></tr>
+            <tr class="total-row"><td style="font-weight:700;">합계</td><td class="amount-cell" colspan="3">${formatNumber(totalAmount)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="table-card" style="overflow:visible;">
+      <div class="table-card-header"><h3>법인카드 사용내역 리스트</h3>
+        <button class="btn btn-primary" onclick="copyTable('usageTable_${safeTeam}')">테이블 복사</button>
+      </div>
+      <div style="padding:16px;">
+        <table class="usage-list-table" id="usageTable_${safeTeam}">
+          <thead><tr><th>번호</th><th>서비스명</th><th>공급업체</th><th>합계</th><th>결제주기</th><th>결제일/기간</th><th>결제카드</th><th>지출분류</th><th>사용내역</th></tr></thead>
+          <tbody>`;
+  allItems.forEach((it, idx) => {
+    const dp = it.type === 'monthly' ? (it.payDate||'') : (it.period||'');
+    html += `<tr><td>${idx+1}</td><td style="text-align:left;padding-left:8px;font-weight:600;">${it.service}</td><td>${it.vendor||''}</td><td style="text-align:right;padding-right:8px;font-weight:600;">${it.amount}</td><td>${it.cycle||''}</td><td>${dp}</td><td>${it.card||''}</td><td>기타</td><td style="text-align:left;padding-left:8px;">${it.purpose||''}</td></tr>`;
+  });
+  html += `</tbody><tfoot><tr style="background:#EFF6FF;font-weight:700;"><td colspan="3" style="border:1px solid #999;padding:10px;text-align:center;">합계</td><td style="border:1px solid #999;text-align:right;padding-right:8px;">${formatNumber(totalAmount)}</td><td colspan="5" style="border:1px solid #999;"></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>`;
+
+  area.innerHTML = html;
+}
+
+function copyTable(tableId) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const range = document.createRange();
+  range.selectNode(table);
+  const sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(range);
+  try { document.execCommand('copy'); showToast('테이블 복사 완료! 하이웍스 품의서에 Ctrl+V로 붙여넣기 하세요.'); }
+  catch(e) { showToast('복사 실패. 수동으로 선택 후 복사해 주세요.'); }
+  sel.removeAllRanges();
+}
+
+// ══════════════════════════════════
+//  Admin: CSV Download
+// ══════════════════════════════════
+function csvSafe(s) { return (s||'').replace(/"/g,'""'); }
+
+function downloadBlobFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function buildCSVForTeam(teamName) {
+  const data = allTeamsData[teamName];
+  if (!data) return null;
+  const BOM = '\uFEFF';
+  let csv = BOM;
+  csv += `"소속 팀","작성자","작성일","해당 월"\n`;
+  csv += `"${csvSafe(teamName)}","${csvSafe(data.meta?.writer)}","${csvSafe(data.meta?.submittedAt?.split('T')[0])}","${csvSafe(data.meta?.month)}"\n\n`;
+
+  const mArr = data.monthly ? Object.values(data.monthly) : [];
+  if (mArr.length > 0) {
+    csv += `"[월 결제 서비스]"\n"No.","서비스명","공급업체","구매 목적","이용 플랜","월 금액","결제주기","정기결제일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    mArr.forEach((r, i) => {
+      csv += `"${i+1}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.payDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+    });
+    csv += '\n';
+  }
+
+  const yArr = data.yearly ? Object.values(data.yearly) : [];
+  if (yArr.length > 0) {
+    csv += `"[연 결제 서비스]"\n"No.","서비스명","공급업체","구매 목적","이용 플랜","연 금액","결제주기","기간","갱신일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    yArr.forEach((r, i) => {
+      csv += `"${i+1}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+    });
+  }
+
+  return csv;
+}
+
+function downloadAllCSV() {
+  const teams = Object.keys(allTeamsData);
+  if (teams.length === 0) { showToast('등록된 팀이 없습니다.'); return; }
+  let count = 0;
+  teams.forEach(t => {
+    const csv = buildCSVForTeam(t);
+    if (csv) {
+      const month = allTeamsData[t].meta?.month?.replace('-','') || 'YYYYMM';
+      downloadBlobFile(csv, `법인카드_고정지출_${t}_${month}.csv`, 'text/csv;charset=utf-8;');
+      count++;
+    }
+  });
+  showToast(`${count}개 팀 CSV 다운로드 완료`);
+}
+
+function downloadCurrentTeamCSV() {
+  if (!adminCurrentTeam) { showToast('팀을 선택해 주세요.'); return; }
+  const csv = buildCSVForTeam(adminCurrentTeam);
+  if (csv) {
+    const month = allTeamsData[adminCurrentTeam].meta?.month?.replace('-','') || 'YYYYMM';
+    downloadBlobFile(csv, `법인카드_고정지출_${adminCurrentTeam}_${month}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`${adminCurrentTeam} CSV 다운로드 완료`);
+  }
+}
+
+// ══════════════════════════════════
+//  Toast
+// ══════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════
+//  Init
+// ══════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const monthStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
+  document.getElementById('staffMonth').value = monthStr;
+
+  // Staff Approval period defaults (previous month)
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const prevMonth = month === 0 ? 12 : month;
+  const prevYear = month === 0 ? year - 1 : year;
+  const lastDay = new Date(prevYear, prevMonth, 0).getDate();
+  document.getElementById('staffApprovalStart').value = `${prevYear}-${String(prevMonth).padStart(2,'0')}-01`;
+  document.getElementById('staffApprovalEnd').value = `${prevYear}-${String(prevMonth).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+
+  // Restore writer name
+  const savedWriter = localStorage.getItem('cc_fixed_writer');
+  if (savedWriter) document.getElementById('staffWriter').value = savedWriter;
+  document.getElementById('staffWriter').addEventListener('blur', function() {
+    localStorage.setItem('cc_fixed_writer', this.value.trim());
+  });
+
+  initFirebase();
+});
+</script>
+</body>
+</html>
