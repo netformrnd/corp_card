@@ -853,21 +853,30 @@ function renderTeamTabs() {
   if (savedTeam && allTeamsData[savedTeam]) {
     currentTeam = savedTeam;
   } else if (!currentTeam && teams.length > 0) {
-    currentTeam = teams[0];
+    currentTeam = null; // 팀 미선택 상태로 시작
   }
 
   const teamColors = ['#3b82f6','#10b981','#ec4899','#f59e0b','#8b5cf6','#06b6d4','#f97316','#22c55e','#a855f7','#f43f5e'];
 
-  container.innerHTML = teams.map((t, i) => {
-    const d = allTeamsData[t];
-    const count = (d.monthly ? Object.keys(d.monthly).length : 0) + (d.yearly ? Object.keys(d.yearly).length : 0);
-    const color = teamColors[i % teamColors.length];
-    return `<div class="team-tab ${t === currentTeam ? 'active' : ''}" onclick="selectTeam('${t}')">
-      <div class="team-dot" style="background:${color}"></div>
-      <span>${t}</span>
-      <span class="team-count">${count}건</span>
-    </div>`;
-  }).join('');
+  // 이미 팀이 선택(잠금)된 경우: 본인 팀만 표시 + 팀 변경 버튼
+  if (currentTeam) {
+    const i = teams.indexOf(currentTeam);
+    const color = teamColors[(i >= 0 ? i : 0) % teamColors.length];
+    container.innerHTML = `<div class="team-tab active" style="cursor:default;">
+        <div class="team-dot" style="background:${color}"></div>
+        <span>${currentTeam}</span>
+      </div>
+      <button class="btn btn-outline" onclick="unlockTeam()" style="font-size:11px;padding:5px 14px;margin-left:8px;">팀 변경</button>`;
+  } else {
+    // 팀 미선택: 전체 팀 목록 표시 (건수 미표시 — 타 팀 정보 보호)
+    container.innerHTML = teams.map((t, i) => {
+      const color = teamColors[i % teamColors.length];
+      return `<div class="team-tab" onclick="selectTeam('${t}')">
+        <div class="team-dot" style="background:${color}"></div>
+        <span>${t}</span>
+      </div>`;
+    }).join('');
+  }
 }
 
 function selectTeam(teamName) {
@@ -876,6 +885,21 @@ function selectTeam(teamName) {
   renderTeamTabs();
   loadTeamDataToForm();
   updateSubmittedBanner();
+}
+
+function unlockTeam() {
+  if (!confirm('다른 팀으로 변경하시겠습니까?\n(현재 입력 중인 내용은 저장되지 않습니다.)')) return;
+  currentTeam = null;
+  localStorage.removeItem('cc_fixed_team');
+  renderTeamTabs();
+  // 폼 초기화
+  ['staffWriter','staffMonth','staffNote'].forEach(id => document.getElementById(id).value = '');
+  ['staffMonthlyBody','staffYearlyBody'].forEach(id => {
+    const tbody = document.getElementById(id);
+    tbody.innerHTML = '';
+    addStaffRowWithData(id.includes('Monthly') ? 'monthly' : 'yearly', {}, 1);
+  });
+  document.getElementById('submittedBanner').style.display = 'none';
 }
 
 function addNewTeam() {
