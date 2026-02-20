@@ -385,9 +385,7 @@
   <!-- Staff Sub-tabs -->
   <div class="sub-tabs">
     <button class="sub-tab active" onclick="switchStaffTab('input')">내역 입력</button>
-    <button class="sub-tab" onclick="switchStaffTab('preview')">미리보기</button>
     <button class="sub-tab" onclick="switchStaffTab('staffApproval')">품의서 양식 변환</button>
-    <button class="sub-tab" onclick="switchStaffTab('staffCsv')">CSV 다운로드</button>
   </div>
 
   <!-- INPUT Tab -->
@@ -510,13 +508,9 @@
 
     <div class="submit-area">
       <button class="btn btn-outline btn-lg" onclick="resetStaffForm()">초기화</button>
+      <button class="btn btn-csv btn-lg" onclick="downloadMyTeamCSV()" style="display:flex;align-items:center;gap:6px;">📥 CSV 다운로드</button>
       <button class="btn btn-primary btn-lg" onclick="saveToFirebase()">💾 저장 (실시간 공유)</button>
     </div>
-  </div>
-
-  <!-- PREVIEW Tab -->
-  <div id="staffPreview" class="section">
-    <div id="previewContent"></div>
   </div>
 
   <!-- STAFF: 품의서 양식 변환 Tab -->
@@ -548,16 +542,6 @@
     <div id="staffApprovalFormsArea"></div>
   </div>
 
-  <!-- STAFF: CSV 다운로드 Tab -->
-  <div id="staffCsv" class="section">
-    <div class="card">
-      <div class="card-title"><div class="icon blue">📥</div> CSV 다운로드</div>
-      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">제출한 내 팀의 고정 지출 내역을 CSV 파일로 다운로드합니다.</p>
-      <div class="submit-area" style="justify-content:flex-start;">
-        <button class="btn btn-primary btn-lg" onclick="downloadMyTeamCSV()">내 팀 CSV 다운로드</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ══════════════════════════ -->
@@ -786,13 +770,12 @@ function switchMode(mode) {
 }
 
 function switchStaffTab(tab) {
-  const tabMap = ['input','preview','staffApproval','staffCsv'];
+  const tabMap = ['input','staffApproval'];
   document.querySelectorAll('#mode-staff .sub-tab').forEach((b, i) => b.classList.toggle('active', tabMap[i] === tab));
-  ['staffInput','staffPreview','staffApproval','staffCsv'].forEach(id => {
+  ['staffInput','staffApproval'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('active', id === (tab === 'input' ? 'staffInput' : tab === 'preview' ? 'staffPreview' : tab));
+    if (el) el.classList.toggle('active', id === (tab === 'input' ? 'staffInput' : tab));
   });
-  if (tab === 'preview') renderStaffPreview();
   if (tab === 'staffApproval') renderStaffApprovalForm();
 }
 
