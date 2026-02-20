@@ -486,7 +486,7 @@
               <td><input type="text" placeholder="구매 목적"></td>
               <td><input type="text" placeholder="플랜명"></td>
               <td><input type="text" placeholder="금액"></td>
-              <td><select><option>연간</option></select></td>
+              <td><select><option>연간</option><option>6개월</option><option>3개월</option></select></td>
               <td><input type="text" placeholder="시작~종료"></td>
               <td><input type="text" placeholder="갱신일"></td>
               <td><input type="text" placeholder="부서"></td>
@@ -987,7 +987,7 @@ function addStaffRowWithData(type, data, num) {
       <td><input type="text" placeholder="구매 목적" value="${d.purpose||''}"></td>
       <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
       <td><input type="text" placeholder="금액" value="${d.amount||''}"></td>
-      <td><select><option ${d.cycle==='연간'?'selected':''}>연간</option></select></td>
+      <td><select><option ${d.cycle==='연간'?'selected':''}>연간</option><option ${d.cycle==='6개월'?'selected':''}>6개월</option><option ${d.cycle==='3개월'?'selected':''}>3개월</option></select></td>
       <td><input type="text" placeholder="시작~종료" value="${d.period||''}"></td>
       <td><input type="text" placeholder="갱신일" value="${d.renewDate||''}"></td>
       <td><input type="text" placeholder="부서" value="${d.dept||''}"></td>
