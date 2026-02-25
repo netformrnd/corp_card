@@ -207,16 +207,41 @@
   .submitted-banner .info p { font-size: 12.5px; color: #047857; }
 
   /* ── Team Status Cards ── */
-  .team-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .team-status-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center; transition: all 0.2s; cursor: pointer; }
-  .team-status-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+  .team-status-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .team-status-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; cursor: pointer; font-size: 12px; }
+  .team-status-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
   .team-status-card.submitted { border-color: #A7F3D0; background: #F0FDF4; }
   .team-status-card.not-submitted { border-color: #FECACA; background: #FFF5F5; }
-  .team-status-name { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
-  .team-status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .team-status-name { font-size: 12px; font-weight: 600; color: var(--primary); }
+  .team-status-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
   .team-status-badge.done { background: #D1FAE5; color: #065F46; }
   .team-status-badge.pending { background: #FEE2E2; color: #991B1B; }
-  .team-status-detail { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+  .team-status-detail { font-size: 11px; color: var(--text-secondary); }
+
+  /* ── 비용 분석 대시보드 ── */
+  .analytics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+  .analytics-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
+  .analytics-card-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .analytics-card-title span { font-size: 16px; }
+  .analytics-stat { display: flex; flex-direction: column; gap: 4px; }
+  .analytics-stat-value { font-size: 22px; font-weight: 800; color: var(--primary); }
+  .analytics-stat-label { font-size: 11px; color: var(--text-muted); }
+  .analytics-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+  .analytics-bar-label { width: 70px; font-weight: 600; color: var(--text); text-align: right; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .analytics-bar-track { flex: 1; height: 22px; background: var(--bg); border-radius: 4px; overflow: hidden; position: relative; }
+  .analytics-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-size: 10px; font-weight: 600; color: #fff; min-width: 30px; }
+  .analytics-bar-amount { font-size: 11px; color: var(--text-secondary); width: 80px; text-align: right; flex-shrink: 0; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .analytics-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .analytics-mini-item { text-align: center; padding: 12px 8px; background: var(--bg); border-radius: var(--radius-sm); }
+  .analytics-mini-item .val { font-size: 18px; font-weight: 800; color: var(--primary); }
+  .analytics-mini-item .lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .analytics-rank-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+  .analytics-rank-row:last-child { border-bottom: none; }
+  .analytics-rank-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  @media (max-width:640px) {
+    .analytics-grid { grid-template-columns: 1fr; }
+    .analytics-mini-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
 
   /* ── Upload Zone ── */
   .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-warm); }
@@ -268,6 +293,32 @@
   .hw-title-box .title-text { flex:1; font-size:14px; font-weight:600; color:#92400E; }
   .hw-tip { display:flex; align-items:flex-start; gap:8px; padding:10px 16px; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:var(--radius-sm); font-size:12px; color:#166534; margin-bottom:16px; line-height:1.6; }
 
+  /* ── Example Toggle Panel ── */
+  .example-toggle { margin-bottom: 16px; border: 1px solid #BFDBFE; border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+  .example-toggle-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: linear-gradient(135deg, #EFF6FF, #F0F9FF); border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--primary); transition: background 0.2s; }
+  .example-toggle-btn:hover { background: linear-gradient(135deg, #DBEAFE, #E0F2FE); }
+  .example-toggle-btn .toggle-icon { font-size: 12px; transition: transform 0.3s; color: var(--accent); }
+  .example-toggle-btn .toggle-icon.open { transform: rotate(180deg); }
+  .example-toggle-content { display: none; padding: 16px 20px; border-top: 1px solid #BFDBFE; background: #FAFBFE; }
+  .example-toggle-content.open { display: block; animation: fadeIn 0.3s ease; }
+
+  /* ── Step Indicator ── */
+  .step-indicator { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 20px; padding: 16px 20px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+  .step-item { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 16px; border-radius: var(--radius-sm); transition: all 0.2s; }
+  .step-item:hover { background: var(--bg); }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border: 2px solid var(--border); color: var(--text-muted); background: var(--bg); transition: all 0.3s; flex-shrink: 0; }
+  .step-label { font-size: 13px; font-weight: 500; color: var(--text-muted); transition: all 0.3s; white-space: nowrap; }
+  .step-arrow { font-size: 14px; color: var(--border); margin: 0 4px; flex-shrink: 0; }
+  .step-item.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .step-item.active .step-label { color: var(--text); font-weight: 700; }
+  .step-item.done .step-num { background: var(--success); border-color: var(--success); color: #fff; }
+  .step-item.done .step-label { color: var(--success); }
+  .step-with-header { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
+  .step-header-bar { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: linear-gradient(135deg, #F8FAFC, #EFF6FF); border-bottom: 1px solid var(--border); }
+  .step-header-icon { font-size: 13px; }
+  .step-header-text { font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; }
+  .step-with-header .step-indicator { border: none; box-shadow: none; border-radius: 0; margin-bottom: 0; }
+
   @media (max-width:640px) {
     .top-header { padding: 0 12px; height: auto; min-height: 48px; flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
     .top-header h1 { font-size: 0.85rem; }
@@ -276,6 +327,10 @@
     .method-options { grid-template-columns: 1fr; }
     .mode-switch { flex-direction: column; }
     .steps { flex-direction: column; }
+    .step-indicator { gap: 0; padding: 12px 8px; }
+    .step-item { padding: 6px 8px; gap: 6px; }
+    .step-label { font-size: 11px; }
+    .step-num { width: 24px; height: 24px; font-size: 11px; }
   }
 
   /* ── Admin Password Modal ── */
@@ -358,7 +413,6 @@
   <button class="mode-btn active" onclick="switchMode('notice')">공지 사항</button>
   <button class="mode-btn" onclick="switchMode('staff')">직원 모드 (회신)</button>
   <button class="mode-btn" onclick="switchMode('admin')">경영관리팀 (취합)</button>
-  <button class="mode-btn" onclick="switchMode('example')">작성 예시</button>
 </div>
 
 <!-- ══════════════════════════ -->
@@ -382,11 +436,11 @@
     </dl>
   </div>
   <div class="card">
-    <div class="card-title"><div class="icon blue">🎯</div> 품의서 작성 목적</div>
+    <div class="card-title"><div class="icon blue">🎯</div> 관리 체계 변경 목적</div>
     <div class="notice-text" style="margin-bottom:14px;">단순한 절차 추가가 아닌, <strong>투명한 비용 관리와 효율적인 예산 운영</strong>을 위해 시행합니다.</div>
     <div class="purpose-list">
-      <div class="purpose-item"><div class="purpose-num">1</div><div><h4>지출 현황 인지 및 공백 방지</h4><p>자동 결제 특성상 담당자 부재 시 지출 내역 파악이 어려운 점을 보완합니다.</p></div></div>
-      <div class="purpose-item"><div class="purpose-num">2</div><div><h4>비용 분석 및 선제적 통제</h4><p>월별 사용 금액을 파악하여 불필요한 고정 지출을 최소화합니다.</p></div></div>
+      <div class="purpose-item"><div class="purpose-num">1</div><div><h4>지출 현황 인지 및 공백 방지</h4><p>자동결제는 별도 승인 없이 반복 결제되므로 최초 등록 이후 지출이 지속되는 사실을 인지하지 못하는 경우가 발생할 수 있습니다.<br>특히 담당자 퇴사·변경 시 인수인계 누락으로 관리 공백이 발생하는 것을 예방하고자 합니다.</p></div></div>
+      <div class="purpose-item"><div class="purpose-num">2</div><div><h4>비용 분석 및 선제적 통제</h4><p>월별 사용 금액을 확인하여 불필요하거나 과다한 고정 지출을 사전에 인지하고 통제합니다.</p></div></div>
     </div>
   </div>
   <div class="card">
@@ -399,7 +453,7 @@
   </div>
   <div class="card">
     <div class="card-title"><div class="icon red">🤝</div> 협조 요청 사항</div>
-    <div class="notice-footer">법인카드는 회사의 소중한 자산인 만큼, 각 <strong>팀장님과 담당자</strong>분들께서는 비용이 어디에, 얼마나 지출되고 있는지 점검해 주시는 계기가 되길 바랍니다.<br><br>궁금하신 점은 <strong>경영관리팀</strong>으로 연락해 주세요.</div>
+    <div class="notice-footer">법인카드는 회사의 소중한 자산인 만큼, 각 <strong>리드님과 담당자</strong>분들께서는 비용이 어디에, 얼마나 지출되고 있는지 점검해 주시는 계기가 되길 바랍니다.<br><br>궁금하신 점은 <strong>경영관리팀</strong>으로 연락해 주세요.</div>
   </div>
 </div>
 
@@ -422,10 +476,28 @@
   <!-- Submitted Banner (shown if already submitted) -->
   <div id="submittedBanner" style="display:none;"></div>
 
-  <!-- Staff Sub-tabs -->
-  <div class="sub-tabs">
-    <button class="sub-tab active" onclick="switchStaffTab('input')">내역 입력</button>
-    <button class="sub-tab" onclick="switchStaffTab('staffApproval')">품의서 양식 변환</button>
+  <!-- Step Indicator (B버전: 라벨 포함) -->
+  <div class="step-with-header" id="staffStepIndicator">
+    <div class="step-header-bar">
+      <span class="step-header-icon">📋</span>
+      <span class="step-header-text">진행 순서</span>
+    </div>
+    <div class="step-indicator">
+      <div class="step-item active" id="step1" onclick="switchStaffTab('input')">
+        <div class="step-num">1</div>
+        <div class="step-label">내역 입력</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-item" id="step2" onclick="switchStaffTab('input');document.getElementById('staffTotalSummary').scrollIntoView({behavior:'smooth',block:'center'});">
+        <div class="step-num">2</div>
+        <div class="step-label">저장</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-item" id="step3" onclick="switchStaffTab('staffApproval')">
+        <div class="step-num">3</div>
+        <div class="step-label">품의서 양식 변환</div>
+      </div>
+    </div>
   </div>
 
   <!-- INPUT Tab -->
@@ -433,6 +505,48 @@
     <div class="form-header">
       <h2>고정 지출 내역 작성</h2>
       <p>아래 양식에 팀의 고정 지출 내역을 작성 후 저장해 주세요. 저장 즉시 경영관리팀에 공유됩니다.</p>
+    </div>
+
+    <!-- 접이식 작성 예시 -->
+    <div class="example-toggle">
+      <button class="example-toggle-btn" onclick="toggleExample()">
+        <span>📌 작성 예시 보기 — 아래 양식 작성 시 참고해 주세요</span>
+        <span class="toggle-icon" id="exampleToggleIcon">▼</span>
+      </button>
+      <div class="example-toggle-content" id="exampleToggleContent">
+        <div class="table-card" style="margin-bottom:12px;">
+          <div class="table-card-header"><h3>기본 정보 (예시)</h3></div>
+          <div class="preview-meta">
+            <span>팀명: <strong>OO팀</strong></span>
+            <span>작성자: <strong>홍길동</strong></span>
+            <span>작성일: <strong>2026-02-13</strong></span>
+            <span>해당 월: <strong>2026년 2월</strong></span>
+          </div>
+        </div>
+        <div class="table-card" style="margin-bottom:12px;">
+          <div class="table-card-header"><h3>월 결제 서비스 (예시)</h3><span class="example-badge badge-monthly">월별 결제</span></div>
+          <div class="table-scroll">
+            <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+            <tbody>
+              <tr><td><span class="row-num">1</span></td><td><strong>SaaS 서비스A</strong></td><td>A사</td><td>업무 생산성 향상</td><td>Standard</td><td><strong>USD 20</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 15일</td><td>OO팀</td><td style="font-size:11px">example@company.com</td><td><span class="card-chip">0000</span></td></tr>
+              <tr><td><span class="row-num">2</span></td><td><strong>클라우드 서비스B</strong></td><td>B사</td><td>데이터 분석</td><td>Pro</td><td><strong>55,000원</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 1일</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">1234</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header"><h3>연 결제 서비스 (예시)</h3><span class="example-badge badge-yearly">연간 결제</span></div>
+          <div class="table-scroll">
+            <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+            <tbody>
+              <tr><td><span class="row-num">1</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td><strong>129,000원</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="preview-summary">
+            <div class="summary-item"><span class="s-label">월 결제 총</span><span class="s-value">2건</span></div>
+            <div class="summary-item"><span class="s-label">연 결제 총</span><span class="s-value">1건</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -572,15 +686,39 @@
       <button class="btn btn-csv btn-lg" onclick="downloadMyTeamCSV()" style="display:flex;align-items:center;gap:6px;">📥 CSV 다운로드</button>
       <button class="btn btn-primary btn-lg" onclick="saveToFirebase()">💾 저장 (실시간 공유)</button>
     </div>
+
+    <!-- 다음 단계 안내 -->
+    <div onclick="switchStaffTab('staffApproval')" style="margin-top:16px;padding:16px 24px;background:linear-gradient(135deg,#1B2A4A,#2C4A7C);border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.2s;box-shadow:var(--shadow-md);" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(27,42,74,0.3)'" onmouseout="this.style.transform='none';this.style.boxShadow='var(--shadow-md)'">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;">3</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff;">다음 단계: 품의서 양식 변환</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,0.65);margin-top:2px;">저장 완료 후, 하이웍스 품의서에 붙여넣을 수 있는 양식을 생성합니다</div>
+        </div>
+      </div>
+      <span style="font-size:20px;color:rgba(255,255,255,0.8);font-weight:700;">→</span>
+    </div>
   </div>
 
   <!-- STAFF: 품의서 양식 변환 Tab -->
   <div id="staffApproval" class="section">
-    <div class="hw-tip">
-      <span>💡</span>
-      <div>
-        <strong>사용 방법:</strong> 아래 생성된 품의서 양식에서 <strong>「제목 복사」</strong> → 하이웍스 품의서 제목에 붙여넣기,
-        <strong>「본문 복사」</strong> → 하이웍스 품의서 본문에 <strong>Ctrl+V</strong>로 붙여넣기하면 바로 사용할 수 있습니다.
+    <!-- 품의서 헤더: 돌아가기 + 사용 안내 통합 -->
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(135deg,#1B2A4A,#2C4A7C);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">📄</span>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#fff;">품의서 양식 변환</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px;">입력한 내역을 하이웍스 품의서 양식으로 변환합니다</div>
+          </div>
+        </div>
+        <button onclick="switchStaffTab('input')" style="padding:7px 16px;border:1.5px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.1);border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px;transition:all 0.2s;backdrop-filter:blur(4px);" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+          <span>←</span> 내역 입력으로 돌아가기
+        </button>
+      </div>
+      <div style="padding:12px 20px;background:#F0FDF4;border-top:none;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#166534;line-height:1.6;">
+        <span style="font-size:15px;">💡</span>
+        <div><strong>사용 방법:</strong> 아래 품의서 양식에서 <strong>「제목 복사」</strong> → 하이웍스 품의서 제목에 붙여넣기, <strong>「본문 복사」</strong> → 본문에 <strong>Ctrl+V</strong>로 붙여넣기하면 바로 사용할 수 있습니다.</div>
       </div>
     </div>
     <div class="card">
@@ -596,11 +734,12 @@
         </div>
         <div class="form-group">
           <label>카드사용기간</label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input type="date" id="staffApprovalStart">
-            <span>~</span>
-            <input type="date" id="staffApprovalEnd">
+          <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;min-height:42px;">
+            <button onclick="shiftApprovalMonth(-1)" style="padding:8px 12px;border:none;background:var(--bg);cursor:pointer;font-size:16px;color:var(--text-secondary);display:flex;align-items:center;transition:background 0.2s;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='var(--bg)'">◀</button>
+            <div id="staffApprovalPeriodDisplay" style="flex:1;text-align:center;font-size:14px;font-weight:600;color:var(--primary);padding:8px 4px;white-space:nowrap;"></div>
+            <button onclick="shiftApprovalMonth(1)" style="padding:8px 12px;border:none;background:var(--bg);cursor:pointer;font-size:16px;color:var(--text-secondary);display:flex;align-items:center;transition:background 0.2s;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='var(--bg)'">▶</button>
           </div>
+          <span id="staffApprovalPeriodSub" style="font-size:11px;color:var(--text-muted);margin-top:4px;display:block;text-align:center;"></span>
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:12px;">
@@ -617,20 +756,15 @@
 <!-- ══════════════════════════ -->
 <div id="mode-admin" class="section">
   <div class="form-header">
-    <h2>경영관리팀 — 고정 지출 취합 및 품의서 변환</h2>
-    <p>각 팀에서 실시간으로 입력한 고정 지출 내역을 확인하고, 하이웍스 품의서 양식으로 변환합니다.</p>
-  </div>
-
-  <!-- Team Status Overview -->
-  <div class="card">
-    <div class="card-title"><div class="icon green">📊</div> 팀별 제출 현황</div>
-    <div class="team-status-grid" id="teamStatusGrid"></div>
+    <h2>경영관리팀 — 고정 지출 취합 및 분석</h2>
+    <p>각 팀의 고정 지출 내역을 확인·분석하고, 하이웍스 품의서 양식으로 변환합니다.</p>
   </div>
 
   <!-- Sub-tabs -->
   <div class="sub-tabs">
     <button class="sub-tab active" onclick="switchAdminTab('overview')">팀별 상세 확인</button>
     <button class="sub-tab" onclick="switchAdminTab('allOverview')">전체 상세 확인</button>
+    <button class="sub-tab" onclick="switchAdminTab('analytics')">📊 비용 분석</button>
     <button class="sub-tab" onclick="switchAdminTab('changePw')" style="margin-left:auto;">🔒 비밀번호 변경</button>
   </div>
 
@@ -647,6 +781,20 @@
       <button class="btn btn-csv btn-lg" onclick="downloadAllCSV()" style="display:flex;align-items:center;gap:6px;">📥 전체 CSV 다운로드</button>
     </div>
     <div id="adminAllDetail"></div>
+  </div>
+
+  <!-- 비용 분석 대시보드 -->
+  <div id="adminAnalytics" class="section">
+    <div id="analyticsContent"></div>
+  </div>
+
+  <!-- 팀별 제출 현황 (하단 컴팩트) -->
+  <div class="card" style="padding:14px 20px;margin-top:8px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-secondary);display:flex;align-items:center;gap:6px;">📋 팀별 제출 현황</div>
+      <div id="teamStatusSummary" style="font-size:11px;color:var(--text-muted);"></div>
+    </div>
+    <div class="team-status-grid" id="teamStatusGrid"></div>
   </div>
 
   <!-- Change Password -->
@@ -674,50 +822,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════ -->
-<!-- MODE: 작성 예시              -->
-<!-- ══════════════════════════ -->
-<div id="mode-example" class="section">
-  <div class="form-header">
-    <h2>별도 작성 예시본</h2>
-    <p>아래는 고정 지출 내역 회신 양식의 작성 예시입니다. 실제 팀 정보를 반영하여 동일한 형식으로 작성해 주세요.</p>
-  </div>
-  <div class="table-card">
-    <div class="table-card-header"><h3>기본 정보 (예시)</h3></div>
-    <div class="preview-meta">
-      <span>팀명: <strong>OO팀</strong></span>
-      <span>작성자: <strong>홍길동</strong></span>
-      <span>작성일: <strong>2026-02-13</strong></span>
-      <span>해당 월: <strong>2026년 2월</strong></span>
-    </div>
-  </div>
-  <div class="table-card">
-    <div class="table-card-header"><h3>월 결제 서비스 (예시)</h3><span class="example-badge badge-monthly">월별 결제</span></div>
-    <div class="table-scroll">
-      <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
-      <tbody>
-        <tr><td><span class="row-num">1</span></td><td><strong>SaaS 서비스A</strong></td><td>A사</td><td>업무 생산성 향상</td><td>Standard</td><td><strong>USD 20</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 15일</td><td>OO팀</td><td style="font-size:11px">example@company.com</td><td><span class="card-chip">0000</span></td></tr>
-        <tr><td><span class="row-num">2</span></td><td><strong>클라우드 서비스B</strong></td><td>B사</td><td>데이터 분석</td><td>Pro</td><td><strong>55,000원</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 1일</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">1234</span></td></tr>
-      </tbody></table>
-    </div>
-  </div>
-  <div class="table-card">
-    <div class="table-card-header"><h3>연 결제 서비스 (예시)</h3><span class="example-badge badge-yearly">연간 결제</span></div>
-    <div class="table-scroll">
-      <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
-      <tbody>
-        <tr><td><span class="row-num">1</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td><strong>129,000원</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
-      </tbody></table>
-    </div>
-    <div class="preview-summary">
-      <div class="summary-item"><span class="s-label">월 결제 총</span><span class="s-value">2건</span></div>
-      <div class="summary-item"><span class="s-label">연 결제 총</span><span class="s-value">1건</span></div>
-    </div>
-  </div>
-  <div class="card" style="text-align:center;padding:20px;">
-    <p style="font-size:14px;color:var(--text-secondary);">위 예시를 참고하여 <strong style="color:var(--accent);cursor:pointer;" onclick="switchMode('staff')">직원 모드 (회신)</strong> 에서 작성해 주세요.</p>
-  </div>
-</div>
 
 </div><!-- container -->
 
@@ -827,7 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════
 function switchMode(mode) {
   if (mode === 'admin' && !adminUnlocked) { showAdminPw(); return; }
-  const modes = ['notice','staff','admin','example'];
+  const modes = ['notice','staff','admin'];
   document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', modes[i] === mode));
   modes.forEach(m => {
     const el = document.getElementById('mode-' + m);
@@ -837,24 +941,95 @@ function switchMode(mode) {
   if (mode === 'staff' && currentTeam) loadTeamDataToForm();
 }
 
+function toggleExample() {
+  const content = document.getElementById('exampleToggleContent');
+  const icon = document.getElementById('exampleToggleIcon');
+  content.classList.toggle('open');
+  icon.classList.toggle('open');
+}
+
+// ── 품의서 카드사용기간 월 네비게이터 ──
+let approvalYear = null;
+let approvalMonth = null;
+
+function initApprovalPeriod() {
+  // 내역 입력의 해당 월 값 기준으로 초기화
+  const raw = document.getElementById('staffMonth')?.value || '';
+  if (raw.length >= 6) {
+    approvalYear = parseInt(raw.substring(0, 4));
+    approvalMonth = parseInt(raw.substring(4, 6));
+  } else {
+    // 해당 월 미입력 시 전월 기준
+    const today = new Date();
+    approvalMonth = today.getMonth(); // 0-based → 전월
+    approvalYear = today.getFullYear();
+    if (approvalMonth === 0) { approvalMonth = 12; approvalYear--; }
+  }
+  updateApprovalPeriodDisplay();
+}
+
+function shiftApprovalMonth(dir) {
+  if (!approvalYear) initApprovalPeriod();
+  approvalMonth += dir;
+  if (approvalMonth > 12) { approvalMonth = 1; approvalYear++; }
+  if (approvalMonth < 1) { approvalMonth = 12; approvalYear--; }
+  updateApprovalPeriodDisplay();
+  renderStaffApprovalForm();
+}
+
+function updateApprovalPeriodDisplay() {
+  const display = document.getElementById('staffApprovalPeriodDisplay');
+  const sub = document.getElementById('staffApprovalPeriodSub');
+  if (display) display.textContent = `${approvalYear}년 ${approvalMonth}월`;
+  if (sub) {
+    const lastDay = new Date(approvalYear, approvalMonth, 0).getDate();
+    sub.textContent = `${approvalYear}.${String(approvalMonth).padStart(2,'0')}.01 ~ ${approvalYear}.${String(approvalMonth).padStart(2,'0')}.${String(lastDay).padStart(2,'0')}`;
+  }
+}
+
+function getApprovalPeriodKor() {
+  if (!approvalYear) initApprovalPeriod();
+  const lastDay = new Date(approvalYear, approvalMonth, 0).getDate();
+  return `${approvalYear}년 ${approvalMonth}월 1일 ~ ${approvalYear}년 ${approvalMonth}월 ${lastDay}일`;
+}
+
 function switchStaffTab(tab) {
-  const tabMap = ['input','staffApproval'];
-  document.querySelectorAll('#mode-staff .sub-tab').forEach((b, i) => b.classList.toggle('active', tabMap[i] === tab));
   ['staffInput','staffApproval'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('active', id === (tab === 'input' ? 'staffInput' : tab));
   });
   if (tab === 'staffApproval') renderStaffApprovalForm();
+  // 스텝 인디케이터 상태 업데이트
+  updateStepIndicator(tab === 'input' ? 1 : 3);
+  // 화면 상단으로 스크롤
+  document.getElementById('mode-staff').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateStepIndicator(currentStep) {
+  const s1 = document.getElementById('step1');
+  const s2 = document.getElementById('step2');
+  const s3 = document.getElementById('step3');
+  if (!s1) return;
+  // Reset all
+  [s1, s2, s3].forEach(s => { s.classList.remove('active','done'); });
+  if (currentStep === 1) {
+    s1.classList.add('active');
+  } else if (currentStep === 3) {
+    s1.classList.add('done');
+    s2.classList.add('done');
+    s3.classList.add('active');
+  }
 }
 
 function switchAdminTab(tab) {
-  const tabs = ['overview','allOverview','changePw'];
+  const tabs = ['overview','allOverview','analytics','changePw'];
   document.querySelectorAll('#mode-admin .sub-tab').forEach((b, i) => b.classList.toggle('active', tabs[i] === tab));
   tabs.forEach(t => {
     const el = document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1));
     if (el) el.classList.toggle('active', t === tab);
   });
   if (tab === 'allOverview') renderAdminAllDetail();
+  if (tab === 'analytics') renderAnalyticsDashboard();
 }
 
 // ══════════════════════════════════
@@ -1276,6 +1451,12 @@ function saveToFirebase() {
     isSaving = false;
     showToast('저장 완료! 경영관리팀에 실시간으로 공유되었습니다.');
     updateSubmittedBanner();
+    // 스텝2(저장) 완료 표시
+    const s1 = document.getElementById('step1');
+    const s2 = document.getElementById('step2');
+    if (s1) s1.classList.add('done');
+    if (s1) s1.classList.remove('active');
+    if (s2) { s2.classList.add('done'); s2.classList.remove('active'); }
   }).catch(err => {
     isSaving = false;
     showToast('저장 오류: ' + err.message);
@@ -1364,19 +1545,23 @@ let adminCurrentTeam = null;
 
 function renderTeamStatusForAdmin() {
   const grid = document.getElementById('teamStatusGrid');
+  const summary = document.getElementById('teamStatusSummary');
   if (!grid) return;
   const teams = Object.keys(allTeamsData);
+  let doneCount = 0;
   grid.innerHTML = teams.map(t => {
     const d = allTeamsData[t];
     const mCount = d.monthly ? Object.keys(d.monthly).length : 0;
     const yCount = d.yearly ? Object.keys(d.yearly).length : 0;
     const submitted = mCount > 0 || yCount > 0;
+    if (submitted) doneCount++;
     return `<div class="team-status-card ${submitted ? 'submitted' : 'not-submitted'}" onclick="adminSelectTeam('${t}')">
-      <div class="team-status-name">${t}</div>
-      <div class="team-status-badge ${submitted ? 'done' : 'pending'}">${submitted ? '제출 완료' : '미제출'}</div>
-      <div class="team-status-detail">${submitted ? `월 ${mCount}건, 연 ${yCount}건` : '대기 중'}</div>
+      <span class="team-status-name">${t}</span>
+      <span class="team-status-badge ${submitted ? 'done' : 'pending'}">${submitted ? '✓ 제출' : '미제출'}</span>
+      ${submitted ? `<span class="team-status-detail">${mCount+yCount}건</span>` : ''}
     </div>`;
-  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">아직 등록된 팀이 없습니다.</div>';
+  }).join('') || '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">아직 등록된 팀이 없습니다.</div>';
+  if (summary) summary.textContent = teams.length > 0 ? `${doneCount}/${teams.length}팀 제출 완료` : '';
 }
 
 function renderAdminView() {
@@ -1551,6 +1736,223 @@ function adminDownloadTeamCSV(teamName) {
 }
 
 // ══════════════════════════════════
+//  Admin: 비용 분석 대시보드
+// ══════════════════════════════════
+function renderAnalyticsDashboard() {
+  const area = document.getElementById('analyticsContent');
+  if (!area) return;
+  const teams = Object.keys(allTeamsData);
+  if (teams.length === 0) {
+    area.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">아직 등록된 데이터가 없습니다.</div>';
+    return;
+  }
+
+  // ── 데이터 수집 ──
+  let totalMonthly = 0, totalYearly = 0;
+  let totalServiceCount = 0;
+  const teamData = []; // { name, monthly, yearly, total, monthlyEquiv, serviceCount }
+  const serviceMap = {}; // 서비스별 지출 합계
+  const cardMap = {}; // 카드별 지출
+
+  teams.forEach(t => {
+    const d = allTeamsData[t];
+    const mArr = d.monthly ? Object.values(d.monthly) : [];
+    const yArr = d.yearly ? Object.values(d.yearly) : [];
+    let tm = 0, ty = 0, yMonthly = 0;
+
+    mArr.forEach(r => {
+      const a = parseAmount(r.amount); tm += a;
+      const sName = r.service || '기타';
+      serviceMap[sName] = (serviceMap[sName] || 0) + a;
+      const cKey = r.card ? `끝자리 ${r.card}` : '미입력';
+      cardMap[cKey] = (cardMap[cKey] || 0) + a;
+    });
+    yArr.forEach(r => {
+      const a = parseAmount(r.amount); ty += a;
+      const cycle = r.cycle || '연간';
+      let div = 12;
+      if (cycle === '6개월') div = 6;
+      else if (cycle === '3개월') div = 3;
+      yMonthly += a / div;
+      const sName = r.service || '기타';
+      serviceMap[sName] = (serviceMap[sName] || 0) + (a / div);
+      const cKey = r.card ? `끝자리 ${r.card}` : '미입력';
+      cardMap[cKey] = (cardMap[cKey] || 0) + (a / div);
+    });
+
+    const svcCount = mArr.length + yArr.length;
+    totalServiceCount += svcCount;
+    totalMonthly += tm;
+    totalYearly += ty;
+
+    if (svcCount > 0) {
+      teamData.push({ name: t, monthly: tm, yearly: ty, total: tm + ty, monthlyEquiv: tm + yMonthly, serviceCount: svcCount });
+    }
+  });
+
+  const grandMonthlyEquiv = teamData.reduce((s, d) => s + d.monthlyEquiv, 0);
+  const grandTotal = totalMonthly + totalYearly;
+
+  // 팀별 비용 순 정렬
+  const teamSorted = [...teamData].sort((a, b) => b.monthlyEquiv - a.monthlyEquiv);
+  const maxTeamCost = teamSorted.length > 0 ? teamSorted[0].monthlyEquiv : 1;
+
+  // 서비스별 TOP 5
+  const svcSorted = Object.entries(serviceMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const maxSvcCost = svcSorted.length > 0 ? svcSorted[0][1] : 1;
+
+  // 카드별 정렬
+  const cardSorted = Object.entries(cardMap).sort((a, b) => b[1] - a[1]);
+
+  // 색상 팔레트
+  const barColors = ['#3B82F6','#8B5CF6','#F59E0B','#10B981','#EF4444','#EC4899','#06B6D4','#84CC16'];
+
+  let html = '';
+
+  // ── 전체 요약 카드 ──
+  html += `<div class="card" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;margin-bottom:20px;padding:24px;">
+    <div style="font-size:13px;font-weight:600;opacity:0.7;margin-bottom:16px;">📊 전체 비용 요약 (월 환산 기준)</div>
+    <div class="analytics-mini-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="analytics-mini-item" style="background:rgba(255,255,255,0.12);">
+        <div class="val" style="color:#fff;">${formatNumber(Math.round(grandMonthlyEquiv))}</div>
+        <div class="lbl" style="color:rgba(255,255,255,0.65);">월 환산 총액</div>
+      </div>
+      <div class="analytics-mini-item" style="background:rgba(255,255,255,0.12);">
+        <div class="val" style="color:#fff;">${formatNumber(Math.round(grandMonthlyEquiv * 12))}</div>
+        <div class="lbl" style="color:rgba(255,255,255,0.65);">연간 예상 총액</div>
+      </div>
+      <div class="analytics-mini-item" style="background:rgba(255,255,255,0.12);">
+        <div class="val" style="color:#fff;">${teamData.length}<span style="font-size:12px;opacity:0.7;">팀</span></div>
+        <div class="lbl" style="color:rgba(255,255,255,0.65);">제출 팀 수</div>
+      </div>
+      <div class="analytics-mini-item" style="background:rgba(255,255,255,0.12);">
+        <div class="val" style="color:#fff;">${totalServiceCount}<span style="font-size:12px;opacity:0.7;">건</span></div>
+        <div class="lbl" style="color:rgba(255,255,255,0.65);">총 서비스 수</div>
+      </div>
+    </div>
+  </div>`;
+
+  // ── 2열 그리드: 팀별 + 서비스별 ──
+  html += `<div class="analytics-grid">`;
+
+  // 팀별 비용 비교
+  html += `<div class="analytics-card">
+    <div class="analytics-card-title"><span>🏢</span> 팀별 비용 비교 (월 환산)</div>`;
+  teamSorted.forEach((d, i) => {
+    const pct = maxTeamCost > 0 ? (d.monthlyEquiv / maxTeamCost * 100) : 0;
+    const color = barColors[i % barColors.length];
+    html += `<div class="analytics-bar-row">
+      <div class="analytics-bar-label">${d.name}</div>
+      <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct, 8)}%;background:${color};">${Math.round(pct)}%</div></div>
+      <div class="analytics-bar-amount">${formatNumber(Math.round(d.monthlyEquiv))}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // 서비스별 TOP 5
+  html += `<div class="analytics-card">
+    <div class="analytics-card-title"><span>💳</span> 서비스별 TOP 5 (월 환산)</div>`;
+  svcSorted.forEach((s, i) => {
+    const pct = maxSvcCost > 0 ? (s[1] / maxSvcCost * 100) : 0;
+    const color = barColors[(i + 2) % barColors.length];
+    html += `<div class="analytics-bar-row">
+      <div class="analytics-bar-label">${s[0]}</div>
+      <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct, 8)}%;background:${color};">${Math.round(pct)}%</div></div>
+      <div class="analytics-bar-amount">${formatNumber(Math.round(s[1]))}</div>
+    </div>`;
+  });
+  if (svcSorted.length === 0) html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">데이터 없음</div>`;
+  html += `</div>`;
+
+  html += `</div>`; // analytics-grid 닫기
+
+  // ── 2열 그리드: 카드별 + 비용 구성 ──
+  html += `<div class="analytics-grid">`;
+
+  // 카드별 지출 현황
+  html += `<div class="analytics-card">
+    <div class="analytics-card-title"><span>💰</span> 카드별 지출 현황 (월 환산)</div>`;
+  const maxCardCost = cardSorted.length > 0 ? cardSorted[0][1] : 1;
+  cardSorted.forEach((c, i) => {
+    const pct = maxCardCost > 0 ? (c[1] / maxCardCost * 100) : 0;
+    const color = barColors[(i + 4) % barColors.length];
+    html += `<div class="analytics-bar-row">
+      <div class="analytics-bar-label">${c[0]}</div>
+      <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct, 8)}%;background:${color};">${Math.round(pct)}%</div></div>
+      <div class="analytics-bar-amount">${formatNumber(Math.round(c[1]))}</div>
+    </div>`;
+  });
+  if (cardSorted.length === 0) html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">데이터 없음</div>`;
+  html += `</div>`;
+
+  // 비용 구성 비율 (월 vs 연)
+  const mPct = grandTotal > 0 ? Math.round(totalMonthly / grandTotal * 100) : 0;
+  const yPct = 100 - mPct;
+  html += `<div class="analytics-card">
+    <div class="analytics-card-title"><span>📈</span> 비용 구성</div>
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;height:28px;border-radius:6px;overflow:hidden;margin-bottom:8px;">
+        <div style="width:${mPct}%;background:#3B82F6;transition:width 0.5s;"></div>
+        <div style="width:${yPct}%;background:#8B5CF6;transition:width 0.5s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);">
+        <span>🔵 월 결제 ${mPct}%</span>
+        <span>🟣 연 결제 ${yPct}%</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="padding:12px;background:#EFF6FF;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:16px;font-weight:800;color:#1D4ED8;">${formatNumber(totalMonthly)}</div>
+        <div style="font-size:10px;color:#3B82F6;margin-top:2px;">월 결제 총액</div>
+      </div>
+      <div style="padding:12px;background:#EDE9FE;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:16px;font-weight:800;color:#6D28D9;">${formatNumber(totalYearly)}</div>
+        <div style="font-size:10px;color:#8B5CF6;margin-top:2px;">연 결제 총액</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);text-align:center;">
+      <div style="font-size:10px;color:var(--text-muted);">팀당 평균 월 환산 비용</div>
+      <div style="font-size:18px;font-weight:800;color:var(--primary);margin-top:2px;">${teamData.length > 0 ? formatNumber(Math.round(grandMonthlyEquiv / teamData.length)) : 0}</div>
+    </div>
+  </div>`;
+
+  html += `</div>`; // analytics-grid 닫기
+
+  // ── 팀별 상세 비교 테이블 ──
+  html += `<div class="analytics-card" style="margin-top:0;">
+    <div class="analytics-card-title"><span>📋</span> 팀별 상세 비교표</div>
+    <div class="table-scroll">
+      <table class="preview-table" style="font-size:12px;">
+        <thead><tr><th>순위</th><th>팀명</th><th>서비스 수</th><th>월 결제</th><th>연 결제</th><th>월 환산 합계</th><th>연간 예상</th><th>비중</th></tr></thead>
+        <tbody>`;
+  teamSorted.forEach((d, i) => {
+    const ratio = grandMonthlyEquiv > 0 ? (d.monthlyEquiv / grandMonthlyEquiv * 100).toFixed(1) : 0;
+    html += `<tr>
+      <td><strong>${i + 1}</strong></td>
+      <td><strong>${d.name}</strong></td>
+      <td>${d.serviceCount}건</td>
+      <td>${formatNumber(d.monthly)}</td>
+      <td>${formatNumber(d.yearly)}</td>
+      <td style="font-weight:700;color:var(--accent);">${formatNumber(Math.round(d.monthlyEquiv))}</td>
+      <td>${formatNumber(Math.round(d.monthlyEquiv * 12))}</td>
+      <td><strong>${ratio}%</strong></td>
+    </tr>`;
+  });
+  html += `<tr style="background:var(--bg);font-weight:700;">
+    <td colspan="2">합계</td>
+    <td>${totalServiceCount}건</td>
+    <td>${formatNumber(totalMonthly)}</td>
+    <td>${formatNumber(totalYearly)}</td>
+    <td style="color:var(--accent);">${formatNumber(Math.round(grandMonthlyEquiv))}</td>
+    <td>${formatNumber(Math.round(grandMonthlyEquiv * 12))}</td>
+    <td>100%</td>
+  </tr>`;
+  html += `</tbody></table></div></div>`;
+
+  area.innerHTML = html;
+}
+
+// ══════════════════════════════════
 //  Admin: Approval Form
 // ══════════════════════════════════
 function renderApprovalView() {
@@ -1588,9 +1990,9 @@ function renderStaffApprovalForm() {
 
   const formData = collectStaffData();
   const user = writerName || currentTeam;
-  const ps = document.getElementById('staffApprovalStart').value || '';
-  const pe = document.getElementById('staffApprovalEnd').value || '';
-  const periodKor = ps && pe ? `${formatKorDate(ps)} ~ ${formatKorDate(pe)}` : '기간 미설정';
+  if (!approvalYear) initApprovalPeriod();
+  updateApprovalPeriodDisplay();
+  const periodKor = getApprovalPeriodKor();
 
   // 데이터 분류
   let monthlyTotal = 0, yearlyTotal = 0;
@@ -2004,14 +2406,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Staff Approval period defaults (previous month)
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const prevMonth = month === 0 ? 12 : month;
-  const prevYear = month === 0 ? year - 1 : year;
-  const lastDay = new Date(prevYear, prevMonth, 0).getDate();
-  document.getElementById('staffApprovalStart').value = `${prevYear}-${String(prevMonth).padStart(2,'0')}-01`;
-  document.getElementById('staffApprovalEnd').value = `${prevYear}-${String(prevMonth).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  // Staff Approval period defaults (해당 월 기준, 없으면 전월)
+  initApprovalPeriod();
 
   // Restore writer name
   const savedWriter = localStorage.getItem('cc_fixed_writer');
