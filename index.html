@@ -762,14 +762,19 @@
 
   <!-- Sub-tabs -->
   <div class="sub-tabs">
-    <button class="sub-tab active" onclick="switchAdminTab('overview')">팀별 상세 확인</button>
+    <button class="sub-tab active" onclick="switchAdminTab('analytics')">📊 비용 분석</button>
+    <button class="sub-tab" onclick="switchAdminTab('overview')">팀별 상세 확인</button>
     <button class="sub-tab" onclick="switchAdminTab('allOverview')">전체 상세 확인</button>
-    <button class="sub-tab" onclick="switchAdminTab('analytics')">📊 비용 분석</button>
     <button class="sub-tab" onclick="switchAdminTab('changePw')" style="margin-left:auto;">🔒 비밀번호 변경</button>
   </div>
 
+  <!-- 비용 분석 대시보드 -->
+  <div id="adminAnalytics" class="section active">
+    <div id="analyticsContent"></div>
+  </div>
+
   <!-- Overview: 팀별 상세 확인 -->
-  <div id="adminOverview" class="section active">
+  <div id="adminOverview" class="section">
     <div class="team-chips" id="adminTeamChips"></div>
     <div id="adminTeamDetail"></div>
   </div>
@@ -781,11 +786,6 @@
       <button class="btn btn-csv btn-lg" onclick="downloadAllCSV()" style="display:flex;align-items:center;gap:6px;">📥 전체 CSV 다운로드</button>
     </div>
     <div id="adminAllDetail"></div>
-  </div>
-
-  <!-- 비용 분석 대시보드 -->
-  <div id="adminAnalytics" class="section">
-    <div id="analyticsContent"></div>
   </div>
 
   <!-- 팀별 제출 현황 (하단 컴팩트) -->
@@ -1022,7 +1022,7 @@ function updateStepIndicator(currentStep) {
 }
 
 function switchAdminTab(tab) {
-  const tabs = ['overview','allOverview','analytics','changePw'];
+  const tabs = ['analytics','overview','allOverview','changePw'];
   document.querySelectorAll('#mode-admin .sub-tab').forEach((b, i) => b.classList.toggle('active', tabs[i] === tab));
   tabs.forEach(t => {
     const el = document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1567,6 +1567,7 @@ function renderTeamStatusForAdmin() {
 function renderAdminView() {
   renderTeamStatusForAdmin();
   renderAdminTeamChips();
+  renderAnalyticsDashboard();
 }
 
 function renderAdminTeamChips() {
