@@ -218,6 +218,12 @@
   .team-status-badge.pending { background: #FEE2E2; color: #991B1B; }
   .team-status-detail { font-size: 11px; color: var(--text-secondary); }
 
+  /* ── 비용 분석: 월 선택 필터 ── */
+  .analytics-month-filter { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .analytics-month-chip { padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--text-secondary); transition:all .2s; }
+  .analytics-month-chip:hover { border-color:var(--primary-light); color:var(--primary); }
+  .analytics-month-chip.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
   /* ── 비용 분석 대시보드 ── */
   .analytics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
   .analytics-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
@@ -1739,14 +1745,39 @@ function adminDownloadTeamCSV(teamName) {
 // ══════════════════════════════════
 //  Admin: 비용 분석 대시보드
 // ══════════════════════════════════
+let analyticsSelectedMonth = '전체'; // 현재 선택된 월 필터
+
 function renderAnalyticsDashboard() {
   const area = document.getElementById('analyticsContent');
   if (!area) return;
-  const teams = Object.keys(allTeamsData);
-  if (teams.length === 0) {
+  const allTeams = Object.keys(allTeamsData);
+  if (allTeams.length === 0) {
     area.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">아직 등록된 데이터가 없습니다.</div>';
     return;
   }
+
+  // ── 월 목록 수집 ──
+  const monthSet = new Set();
+  allTeams.forEach(t => {
+    const m = allTeamsData[t]?.meta?.month;
+    if (m) monthSet.add(m);
+  });
+  const months = [...monthSet].sort().reverse();
+
+  // ── 월 필터 UI ──
+  let filterHtml = `<div class="analytics-month-filter">
+    <span style="font-size:12px;font-weight:700;color:var(--text-secondary);">📅 조회 월:</span>
+    <div class="analytics-month-chip ${analyticsSelectedMonth === '전체' ? 'active' : ''}" onclick="analyticsFilterMonth('전체')">전체</div>`;
+  months.forEach(m => {
+    const label = m.replace('-', '년 ') + '월';
+    filterHtml += `<div class="analytics-month-chip ${analyticsSelectedMonth === m ? 'active' : ''}" onclick="analyticsFilterMonth('${m}')">${label}</div>`;
+  });
+  filterHtml += `</div>`;
+
+  // ── 월 필터 적용: 해당 월 팀만 필터 ──
+  const teams = analyticsSelectedMonth === '전체'
+    ? allTeams
+    : allTeams.filter(t => allTeamsData[t]?.meta?.month === analyticsSelectedMonth);
 
   // ── 데이터 수집 ──
   let totalMonthly = 0, totalYearly = 0;
@@ -1808,11 +1839,20 @@ function renderAnalyticsDashboard() {
   // 색상 팔레트
   const barColors = ['#3B82F6','#8B5CF6','#F59E0B','#10B981','#EF4444','#EC4899','#06B6D4','#84CC16'];
 
-  let html = '';
+  let html = filterHtml;
+
+  const monthLabel = analyticsSelectedMonth === '전체' ? '전체' : analyticsSelectedMonth.replace('-', '년 ') + '월';
+
+  // 데이터 없을 때
+  if (teamData.length === 0) {
+    html += `<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">선택한 월(${monthLabel})에 해당하는 데이터가 없습니다.</div>`;
+    area.innerHTML = html;
+    return;
+  }
 
   // ── 전체 요약 카드 ──
   html += `<div class="card" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;margin-bottom:20px;padding:24px;">
-    <div style="font-size:13px;font-weight:600;opacity:0.7;margin-bottom:16px;">📊 전체 비용 요약 (월 환산 기준)</div>
+    <div style="font-size:13px;font-weight:600;opacity:0.7;margin-bottom:16px;">📊 비용 요약 — ${monthLabel} (월 환산 기준)</div>
     <div class="analytics-mini-grid" style="grid-template-columns:repeat(4,1fr);">
       <div class="analytics-mini-item" style="background:rgba(255,255,255,0.12);">
         <div class="val" style="color:#fff;">${formatNumber(Math.round(grandMonthlyEquiv))}</div>
@@ -1951,6 +1991,11 @@ function renderAnalyticsDashboard() {
   html += `</tbody></table></div></div>`;
 
   area.innerHTML = html;
+}
+
+function analyticsFilterMonth(m) {
+  analyticsSelectedMonth = m;
+  renderAnalyticsDashboard();
 }
 
 // ══════════════════════════════════
