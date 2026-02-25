@@ -223,10 +223,11 @@
   .analytics-month-nav .nav-btn { width:32px; height:32px; border-radius:50%; border:1.5px solid var(--border); background:var(--bg); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--text-secondary); transition:all .2s; }
   .analytics-month-nav .nav-btn:hover { border-color:var(--primary); color:var(--primary); background:#EFF6FF; }
   .analytics-month-nav .month-display { font-size:15px; font-weight:700; color:var(--text); min-width:120px; text-align:center; }
-  .analytics-month-nav .all-btn { padding:6px 16px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--text-secondary); transition:all .2s; margin-left:auto; }
-  .analytics-month-nav .all-btn:hover { border-color:var(--primary); color:var(--primary); }
-  .analytics-month-nav .all-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
-  .analytics-month-nav .month-info { font-size:11px; color:var(--text-muted); margin-left:6px; }
+  .analytics-month-nav .divider { width:1px; height:28px; background:var(--border); margin:0 8px; }
+  .analytics-month-nav .all-btn { padding:8px 20px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; border:1.5px solid var(--border); background:var(--bg); color:var(--text-secondary); transition:all .2s; margin-left:auto; }
+  .analytics-month-nav .all-btn:hover { border-color:var(--primary); color:var(--primary); background:#EFF6FF; }
+  .analytics-month-nav .all-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); box-shadow:0 2px 8px rgba(37,99,235,0.25); }
+  .analytics-month-nav .month-info { font-size:11px; color:var(--text-muted); }
 
   /* ── 비용 분석 대시보드 ── */
   .analytics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
@@ -1795,8 +1796,9 @@ function renderAnalyticsDashboard() {
     <button class="nav-btn" onclick="analyticsFilterMonth('month','prev')">◀</button>
     <div class="month-display" style="${analyticsFilterMode === 'month' ? 'color:var(--primary);' : ''}">${monthDisplayLabel}</div>
     <button class="nav-btn" onclick="analyticsFilterMonth('month','next')">▶</button>
-    <span class="month-info">${analyticsFilterMode === 'month' ? matchCount + '개 팀 조회됨' : ''}</span>
-    <button class="all-btn ${analyticsFilterMode === 'all' ? 'active' : ''}" onclick="analyticsFilterMonth('all')">전체 보기</button>
+    <span class="month-info">${analyticsFilterMode === 'month' ? '(' + matchCount + '개 팀)' : ''}</span>
+    <div class="divider"></div>
+    <button class="all-btn ${analyticsFilterMode === 'all' ? 'active' : ''}" onclick="analyticsFilterMonth('all')">📋 전체 보기</button>
   </div>`;
 
   // ── 월 필터 적용 ──
