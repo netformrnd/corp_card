@@ -116,6 +116,30 @@
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
   .form-group textarea { resize: vertical; min-height: 56px; }
 
+  /* ── Month Input + Select ── */
+  .month-input-wrap { display: flex; align-items: center; gap: 8px; }
+  .month-input-wrap input[type="text"] { flex: 1; min-width: 0; }
+  .month-input-divider { font-size: 12px; color: var(--text-muted); white-space: nowrap; font-weight: 500; }
+  .month-select-group { display: flex; gap: 6px; }
+  .month-select { padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface); cursor: pointer; transition: border-color 0.2s; }
+  .month-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .month-select:hover { border-color: var(--accent); }
+
+  /* ── Category Select ── */
+  .category-select { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--primary); background: #F8FAFC; cursor: pointer; min-width: 72px; }
+  .category-select:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Currency Select ── */
+  .currency-select { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text); background: var(--surface); cursor: pointer; min-width: 58px; }
+  .currency-select:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Exchange Rate Info ── */
+  .exchange-rate-info { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: var(--radius-sm); font-size: 12px; color: #9A3412; margin-bottom: 12px; line-height: 1.5; flex-wrap: wrap; }
+  .exchange-rate-info .rate-value { font-weight: 700; color: #C2410C; }
+  .exchange-rate-info .rate-date { color: #B45309; font-size: 11px; }
+  .exchange-rate-refresh { background: none; border: 1px solid #FDBA74; border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; color: #9A3412; }
+  .exchange-rate-refresh:hover { background: #FED7AA; }
+
   /* ── Table ── */
   .table-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
   .table-card-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--bg-warm); flex-wrap: wrap; gap: 10px; }
@@ -305,11 +329,12 @@
   .hw-tip { display:flex; align-items:flex-start; gap:8px; padding:10px 16px; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:var(--radius-sm); font-size:12px; color:#166534; margin-bottom:16px; line-height:1.6; }
 
   /* ── Example Toggle Panel ── */
-  .example-toggle { margin-bottom: 16px; border: 1px solid #BFDBFE; border-radius: var(--radius); overflow: hidden; background: var(--surface); }
-  .example-toggle-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: linear-gradient(135deg, #EFF6FF, #F0F9FF); border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--primary); transition: background 0.2s; }
-  .example-toggle-btn:hover { background: linear-gradient(135deg, #DBEAFE, #E0F2FE); }
-  .example-toggle-btn .toggle-icon { font-size: 12px; transition: transform 0.3s; color: var(--accent); }
+  .example-toggle { margin-bottom: 16px; border: 2px solid #3B82F6; border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: 0 2px 8px rgba(59,130,246,0.15); }
+  .example-toggle-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(135deg, #DBEAFE, #E0F2FE); border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; color: #1D4ED8; transition: all 0.2s; text-align: left; }
+  .example-toggle-btn:hover { background: linear-gradient(135deg, #BFDBFE, #BAE6FD); box-shadow: 0 2px 12px rgba(59,130,246,0.2); }
+  .example-toggle-btn .toggle-icon { font-size: 12px; transition: transform 0.3s; color: #2563EB; }
   .example-toggle-btn .toggle-icon.open { transform: rotate(180deg); }
+  .example-toggle-hint { display: block; font-size: 12px; font-weight: 400; color: #3B82F6; margin-top: 3px; }
   .example-toggle-content { display: none; padding: 16px 20px; border-top: 1px solid #BFDBFE; background: #FAFBFE; }
   .example-toggle-content.open { display: block; animation: fadeIn 0.3s ease; }
 
@@ -342,6 +367,10 @@
     .step-item { padding: 6px 8px; gap: 6px; }
     .step-label { font-size: 11px; }
     .step-num { width: 24px; height: 24px; font-size: 11px; }
+    .month-input-wrap { flex-direction: column; align-items: stretch; }
+    .month-input-divider { text-align: center; }
+    .month-select-group { justify-content: stretch; }
+    .month-select { flex: 1; }
   }
 
   /* ── Admin Password Modal ── */
@@ -518,10 +547,35 @@
       <p>아래 양식에 팀의 고정 지출 내역을 작성 후 저장해 주세요. 저장 즉시 경영관리팀에 공유됩니다.</p>
     </div>
 
-    <!-- 접이식 작성 예시 -->
+    <div class="card">
+      <div class="card-title"><div class="icon blue">📋</div> 기본 정보</div>
+      <div class="team-info-row">
+        <div class="form-group">
+          <label>작성자 <span class="req">*</span></label>
+          <input type="text" id="staffWriter" placeholder="이름 입력">
+        </div>
+        <div class="form-group">
+          <label>해당 월 <span class="req">*</span></label>
+          <div class="month-input-wrap">
+            <input type="text" id="staffMonth" placeholder="예: 202601" maxlength="7" style="font-variant-numeric:tabular-nums;">
+            <span class="month-input-divider">또는</span>
+            <div class="month-select-group">
+              <select id="staffMonthYear" class="month-select"></select>
+              <select id="staffMonthMonth" class="month-select"></select>
+            </div>
+          </div>
+          <span id="staffMonthPreview" style="font-size:12px;color:var(--accent);margin-top:4px;display:block;min-height:18px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 접이식 작성 예시 (기본정보 아래 배치) -->
     <div class="example-toggle">
       <button class="example-toggle-btn" onclick="toggleExample()">
-        <span>📌 작성 예시 보기 — 아래 양식 작성 시 참고해 주세요</span>
+        <span>
+          📌 작성 예시 보기
+          <span class="example-toggle-hint">👆 클릭하면 월·연 결제 서비스 작성 예시를 확인할 수 있습니다</span>
+        </span>
         <span class="toggle-icon" id="exampleToggleIcon">▼</span>
       </button>
       <div class="example-toggle-content" id="exampleToggleContent">
@@ -537,40 +591,27 @@
         <div class="table-card" style="margin-bottom:12px;">
           <div class="table-card-header"><h3>월 결제 서비스 (예시)</h3><span class="example-badge badge-monthly">월별 결제</span></div>
           <div class="table-scroll">
-            <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
             <tbody>
-              <tr><td><span class="row-num">1</span></td><td><strong>SaaS 서비스A</strong></td><td>A사</td><td>업무 생산성 향상</td><td>Standard</td><td><strong>USD 20</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 15일</td><td>OO팀</td><td style="font-size:11px">example@company.com</td><td><span class="card-chip">0000</span></td></tr>
-              <tr><td><span class="row-num">2</span></td><td><strong>클라우드 서비스B</strong></td><td>B사</td><td>데이터 분석</td><td>Pro</td><td><strong>55,000원</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 1일</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">1234</span></td></tr>
+              <tr><td><span class="row-num">1</span></td><td><span class="badge-cycle badge-monthly">AI</span></td><td><strong>SaaS 서비스A</strong></td><td>A사</td><td>업무 생산성 향상</td><td>Standard</td><td>USD</td><td><strong>20</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 15일</td><td>OO팀</td><td style="font-size:11px">example@company.com</td><td><span class="card-chip">0000</span></td></tr>
+              <tr><td><span class="row-num">2</span></td><td><span class="badge-cycle badge-yearly">서비스</span></td><td><strong>클라우드 서비스B</strong></td><td>B사</td><td>데이터 분석</td><td>Pro</td><td>KRW</td><td><strong>55,000</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 1일</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">1234</span></td></tr>
+              <tr><td><span class="row-num">3</span></td><td><span style="background:#F59E0B;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">광고</span></td><td><strong>검색광고D</strong></td><td>D사</td><td>마케팅 광고 집행</td><td>Basic</td><td>KRW</td><td><strong>300,000</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 5일</td><td>OO팀</td><td style="font-size:11px">ad@company.com</td><td><span class="card-chip">1234</span></td></tr>
             </tbody></table>
           </div>
         </div>
         <div class="table-card">
           <div class="table-card-header"><h3>연 결제 서비스 (예시)</h3><span class="example-badge badge-yearly">연간 결제</span></div>
           <div class="table-scroll">
-            <table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
             <tbody>
-              <tr><td><span class="row-num">1</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td><strong>129,000원</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
+              <tr><td><span class="row-num">1</span></td><td><span class="badge-cycle badge-yearly">서비스</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td>KRW</td><td><strong>129,000</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
+              <tr><td><span class="row-num">2</span></td><td><span style="background:#8B5CF6;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">사용 수수료</span></td><td><strong>결제수수료E</strong></td><td>E사</td><td>PG 수수료</td><td>-</td><td>KRW</td><td><strong>240,000</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-03-01~2027-02-28</td><td>2027-03-01</td><td>OO팀</td><td style="font-size:11px">billing@company.com</td><td><span class="card-chip">5678</span></td></tr>
             </tbody></table>
           </div>
           <div class="preview-summary">
-            <div class="summary-item"><span class="s-label">월 결제 총</span><span class="s-value">2건</span></div>
-            <div class="summary-item"><span class="s-label">연 결제 총</span><span class="s-value">1건</span></div>
+            <div class="summary-item"><span class="s-label">월 결제 총</span><span class="s-value">3건</span></div>
+            <div class="summary-item"><span class="s-label">연 결제 총</span><span class="s-value">2건</span></div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><div class="icon blue">📋</div> 기본 정보</div>
-      <div class="team-info-row">
-        <div class="form-group">
-          <label>작성자 <span class="req">*</span></label>
-          <input type="text" id="staffWriter" placeholder="이름 입력">
-        </div>
-        <div class="form-group">
-          <label>해당 월 <span class="req">*</span></label>
-          <input type="text" id="staffMonth" placeholder="예: 202601" maxlength="7" style="font-variant-numeric:tabular-nums;">
-          <span id="staffMonthPreview" style="font-size:12px;color:var(--accent);margin-top:4px;display:block;min-height:18px;"></span>
         </div>
       </div>
     </div>
@@ -585,10 +626,12 @@
         <table class="expense-table" id="staffMonthlyTable">
           <thead><tr>
             <th style="width:36px">No.</th>
+            <th style="min-width:75px">카테고리</th>
             <th style="min-width:80px">서비스명</th>
             <th style="min-width:80px">공급업체</th>
             <th style="min-width:100px">구매 목적</th>
             <th style="min-width:80px">이용 플랜</th>
+            <th style="min-width:55px">통화</th>
             <th style="min-width:80px">월 금액</th>
             <th style="min-width:60px">결제주기</th>
             <th style="min-width:70px">정기결제일</th>
@@ -601,10 +644,12 @@
           <tbody id="staffMonthlyBody">
             <tr>
               <td><span class="row-num">1</span></td>
+              <td><select class="category-select"><option value="서비스">서비스</option><option value="사용 수수료">사용 수수료</option><option value="AI">AI</option><option value="광고">광고</option></select></td>
               <td><input type="text" placeholder="서비스명"></td>
               <td><input type="text" placeholder="공급업체"></td>
               <td><input type="text" placeholder="구매 목적"></td>
               <td><input type="text" placeholder="플랜명"></td>
+              <td><select class="currency-select"><option value="KRW" selected>KRW</option><option value="USD">USD</option></select></td>
               <td><input type="text" class="amt-input" placeholder="금액"></td>
               <td><select><option>월별</option></select></td>
               <td><input type="text" class="paydate-input" placeholder="일자만 입력 (예: 15)"></td>
@@ -629,10 +674,12 @@
         <table class="expense-table" id="staffYearlyTable">
           <thead><tr>
             <th style="width:36px">No.</th>
+            <th style="min-width:75px">카테고리</th>
             <th style="min-width:80px">서비스명</th>
             <th style="min-width:80px">공급업체</th>
             <th style="min-width:100px">구매 목적</th>
             <th style="min-width:80px">이용 플랜</th>
+            <th style="min-width:55px">통화</th>
             <th style="min-width:80px">연 금액</th>
             <th style="min-width:60px">결제주기</th>
             <th style="min-width:90px">기간</th>
@@ -646,10 +693,12 @@
           <tbody id="staffYearlyBody">
             <tr>
               <td><span class="row-num">1</span></td>
+              <td><select class="category-select"><option value="서비스">서비스</option><option value="사용 수수료">사용 수수료</option><option value="AI">AI</option><option value="광고">광고</option></select></td>
               <td><input type="text" placeholder="서비스명"></td>
               <td><input type="text" placeholder="공급업체"></td>
               <td><input type="text" placeholder="구매 목적"></td>
               <td><input type="text" placeholder="플랜명"></td>
+              <td><select class="currency-select"><option value="KRW" selected>KRW</option><option value="USD">USD</option></select></td>
               <td><input type="text" class="amt-input" placeholder="금액"></td>
               <td><select onchange="calcYearlyPeriod(this.closest('tr'))"><option>연간</option><option>6개월</option><option>3개월</option></select></td>
               <td><input type="text" class="period-input" placeholder="시작일 (예: 2026.03.01)"></td>
@@ -668,18 +717,25 @@
     <!-- 월 환산 총 합계 -->
     <div class="staff-total-summary" id="staffTotalSummary">
       <div class="sts-title">💰 월 환산 총 합계 비용</div>
+      <div id="exchangeRateBox" class="exchange-rate-info" style="display:none;">
+        💱 적용 환율: <span class="rate-value" id="exchangeRateDisplay">-</span>
+        <span class="rate-date" id="exchangeRateDate"></span>
+        <button class="exchange-rate-refresh" onclick="fetchExchangeRate(true)">🔄 새로고침</button>
+      </div>
       <div class="sts-empty" id="staffTotalEmpty">서비스 금액을 입력하면 자동으로 합계가 표시됩니다.</div>
       <div class="sts-grid" id="staffTotalGrid" style="display:none;">
         <div class="sts-item">
           <div class="sts-label">월 결제 합계</div>
           <div class="sts-value" id="stsMonthlyCost">0원</div>
+          <div class="sts-sub" id="stsMonthlyUsd" style="display:none;font-size:11px;color:#9A3412;margin-top:2px;"></div>
         </div>
         <div class="sts-item">
           <div class="sts-label">연 결제 (월 환산)</div>
           <div class="sts-value" id="stsYearlyCost">0원</div>
+          <div class="sts-sub" id="stsYearlyUsd" style="display:none;font-size:11px;color:#9A3412;margin-top:2px;"></div>
         </div>
         <div class="sts-item sts-total">
-          <div class="sts-label">월 총 합계</div>
+          <div class="sts-label">월 총 합계 <span style="font-size:11px;font-weight:400;color:#666;">(원화 환산)</span></div>
           <div class="sts-value" id="stsTotalCost">0원</div>
         </div>
       </div>
@@ -1180,6 +1236,22 @@ function loadTeamDataToForm() {
     document.getElementById('staffWriter').value = data.meta.writer || '';
     const rawMonth = (data.meta.month || '').replace(/-/g, '');
     document.getElementById('staffMonth').value = rawMonth;
+    // 드롭다운 동기화
+    if (rawMonth.length === 6) {
+      const yy = rawMonth.substring(0, 4);
+      const mm = rawMonth.substring(4, 6);
+      const ySel = document.getElementById('staffMonthYear');
+      const mSel = document.getElementById('staffMonthMonth');
+      if (ySel && mSel) {
+        if (!ySel.querySelector(`option[value="${yy}"]`)) {
+          const opt = document.createElement('option');
+          opt.value = yy; opt.textContent = yy + '년';
+          ySel.appendChild(opt);
+        }
+        ySel.value = yy;
+        mSel.value = mm;
+      }
+    }
     const preview = document.getElementById('staffMonthPreview');
     if (preview && rawMonth.length === 6) {
       preview.textContent = `→ ${rawMonth.substring(0,4)}년 ${parseInt(rawMonth.substring(4,6))}월`;
@@ -1220,12 +1292,16 @@ function addStaffRowWithData(type, data, num) {
   const d = data || {};
 
   if (type === 'monthly') {
+    const cur = d.currency || 'KRW';
+    const cat = d.category || '서비스';
     tbody.insertAdjacentHTML('beforeend', `<tr>
       <td><span class="row-num">${num}</span></td>
+      <td><select class="category-select"><option value="서비스" ${cat==='서비스'?'selected':''}>서비스</option><option value="사용 수수료" ${cat==='사용 수수료'?'selected':''}>사용 수수료</option><option value="AI" ${cat==='AI'?'selected':''}>AI</option><option value="광고" ${cat==='광고'?'selected':''}>광고</option></select></td>
       <td><input type="text" placeholder="서비스명" value="${d.service||''}"></td>
       <td><input type="text" placeholder="공급업체" value="${d.vendor||''}"></td>
       <td><input type="text" placeholder="구매 목적" value="${d.purpose||''}"></td>
       <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
+      <td><select class="currency-select"><option value="KRW" ${cur==='KRW'?'selected':''}>KRW</option><option value="USD" ${cur==='USD'?'selected':''}>USD</option></select></td>
       <td><input type="text" class="amt-input" placeholder="금액" value="${formatAmountComma(d.amount||'')}"></td>
       <td><select><option ${d.cycle==='월별'?'selected':''}>월별</option></select></td>
       <td><input type="text" class="paydate-input" placeholder="일자만 입력 (예: 15)" value="${d.payDate||''}"></td>
@@ -1236,12 +1312,16 @@ function addStaffRowWithData(type, data, num) {
       <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
     </tr>`);
   } else {
+    const cur = d.currency || 'KRW';
+    const cat = d.category || '서비스';
     tbody.insertAdjacentHTML('beforeend', `<tr>
       <td><span class="row-num">${num}</span></td>
+      <td><select class="category-select"><option value="서비스" ${cat==='서비스'?'selected':''}>서비스</option><option value="사용 수수료" ${cat==='사용 수수료'?'selected':''}>사용 수수료</option><option value="AI" ${cat==='AI'?'selected':''}>AI</option><option value="광고" ${cat==='광고'?'selected':''}>광고</option></select></td>
       <td><input type="text" placeholder="서비스명" value="${d.service||''}"></td>
       <td><input type="text" placeholder="공급업체" value="${d.vendor||''}"></td>
       <td><input type="text" placeholder="구매 목적" value="${d.purpose||''}"></td>
       <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
+      <td><select class="currency-select"><option value="KRW" ${cur==='KRW'?'selected':''}>KRW</option><option value="USD" ${cur==='USD'?'selected':''}>USD</option></select></td>
       <td><input type="text" class="amt-input" placeholder="금액" value="${formatAmountComma(d.amount||'')}"></td>
       <td><select onchange="calcYearlyPeriod(this.closest('tr'))"><option ${d.cycle==='연간'?'selected':''}>연간</option><option ${d.cycle==='6개월'?'selected':''}>6개월</option><option ${d.cycle==='3개월'?'selected':''}>3개월</option></select></td>
       <td><input type="text" class="period-input" placeholder="시작일 (예: 2026.03.01)" value="${d.period||''}"></td>
@@ -1349,40 +1429,75 @@ function calcYearlyPeriod(row) {
 //  Staff: 월 환산 총 합계 실시간 계산
 // ══════════════════════════════════
 function updateStaffTotalSummary() {
-  let monthlyTotal = 0;
-  let yearlyMonthlyTotal = 0;
+  const rate = getExchangeRate();
+  let monthlyKrw = 0, monthlyUsd = 0;
+  let yearlyKrw = 0, yearlyUsd = 0;
+  let hasUsd = false;
 
-  // 월 결제 합산
+  // 월 결제 합산 (통화별)
   for (const row of document.getElementById('staffMonthlyBody').rows) {
     const inputs = row.querySelectorAll('input');
-    if (inputs[4]) monthlyTotal += parseAmount(inputs[4].value);
+    const selects = row.querySelectorAll('select');
+    const currency = selects[1] ? selects[1].value : 'KRW'; // [0]=카테고리, [1]=통화
+    const amt = inputs[4] ? parseAmount(inputs[4].value) : 0;
+    if (currency === 'USD') { monthlyUsd += amt; hasUsd = true; }
+    else { monthlyKrw += amt; }
   }
 
-  // 연 결제 → 월 환산 합산 (결제주기별 나누기)
+  // 연 결제 → 월 환산 합산 (통화별, 결제주기별)
   for (const row of document.getElementById('staffYearlyBody').rows) {
     const inputs = row.querySelectorAll('input');
-    const sel = row.querySelector('select');
+    const selects = row.querySelectorAll('select');
+    const currency = selects[1] ? selects[1].value : 'KRW'; // [0]=카테고리, [1]=통화
+    const cycle = selects[2] ? selects[2].value : '연간';   // [2]=결제주기
     const amt = inputs[4] ? parseAmount(inputs[4].value) : 0;
-    const cycle = sel ? sel.value : '연간';
     let divisor = 12;
     if (cycle === '6개월') divisor = 6;
     else if (cycle === '3개월') divisor = 3;
-    yearlyMonthlyTotal += amt / divisor;
+    if (currency === 'USD') { yearlyUsd += amt / divisor; hasUsd = true; }
+    else { yearlyKrw += amt / divisor; }
   }
 
+  // 원화 환산 합계
+  const monthlyTotal = monthlyKrw + (monthlyUsd * rate);
+  const yearlyMonthlyTotal = yearlyKrw + (yearlyUsd * rate);
   const total = monthlyTotal + yearlyMonthlyTotal;
+
   const emptyEl = document.getElementById('staffTotalEmpty');
   const gridEl = document.getElementById('staffTotalGrid');
+  const rateBox = document.getElementById('exchangeRateBox');
+
+  // USD가 있으면 환율 정보 표시
+  rateBox.style.display = hasUsd ? 'flex' : 'none';
 
   if (total > 0) {
     emptyEl.style.display = 'none';
     gridEl.style.display = 'grid';
-    document.getElementById('stsMonthlyCost').textContent = formatNumber(Math.round(monthlyTotal)) + '원';
-    document.getElementById('stsYearlyCost').textContent = formatNumber(Math.round(yearlyMonthlyTotal)) + '원';
+
+    // 월 결제 합계
+    let monthlyText = formatNumber(Math.round(monthlyTotal)) + '원';
+    document.getElementById('stsMonthlyCost').textContent = monthlyText;
+    const mUsdEl = document.getElementById('stsMonthlyUsd');
+    if (monthlyUsd > 0) {
+      mUsdEl.textContent = `(USD ${formatNumber(Math.round(monthlyUsd * 100) / 100)} × ${formatNumber(rate)}원)`;
+      mUsdEl.style.display = 'block';
+    } else { mUsdEl.style.display = 'none'; }
+
+    // 연 결제 (월 환산) 합계
+    let yearlyText = formatNumber(Math.round(yearlyMonthlyTotal)) + '원';
+    document.getElementById('stsYearlyCost').textContent = yearlyText;
+    const yUsdEl = document.getElementById('stsYearlyUsd');
+    if (yearlyUsd > 0) {
+      yUsdEl.textContent = `(USD ${formatNumber(Math.round(yearlyUsd * 100) / 100)} × ${formatNumber(rate)}원)`;
+      yUsdEl.style.display = 'block';
+    } else { yUsdEl.style.display = 'none'; }
+
+    // 총 합계
     document.getElementById('stsTotalCost').textContent = formatNumber(Math.round(total)) + '원';
   } else {
     emptyEl.style.display = 'block';
     gridEl.style.display = 'none';
+    rateBox.style.display = 'none';
   }
 }
 
@@ -1414,12 +1529,17 @@ function collectStaffData() {
   let mIdx = 0;
   for (const row of document.getElementById('staffMonthlyBody').rows) {
     const inputs = row.querySelectorAll('input');
-    const sel = row.querySelector('select');
+    const selects = row.querySelectorAll('select');
+    const catSel = selects[0];  // 카테고리 select
+    const currSel = selects[1]; // 통화 select
+    const cycleSel = selects[2]; // 결제주기 select
     if (inputs[0]?.value.trim()) {
       monthly['m' + mIdx] = {
+        category: catSel ? catSel.value : '서비스',
         service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
         purpose: inputs[2].value.trim(), plan: inputs[3].value.trim(),
-        amount: inputs[4].value.trim(), cycle: sel ? sel.value : '월별',
+        currency: currSel ? currSel.value : 'KRW',
+        amount: inputs[4].value.trim(), cycle: cycleSel ? cycleSel.value : '월별',
         payDate: inputs[5].value.trim(), dept: inputs[6].value.trim(),
         account: inputs[7].value.trim(), card: inputs[8].value.trim(),
         note: inputs[9].value.trim()
@@ -1432,12 +1552,17 @@ function collectStaffData() {
   let yIdx = 0;
   for (const row of document.getElementById('staffYearlyBody').rows) {
     const inputs = row.querySelectorAll('input');
-    const sel = row.querySelector('select');
+    const selects = row.querySelectorAll('select');
+    const catSel = selects[0];  // 카테고리 select
+    const currSel = selects[1]; // 통화 select
+    const cycleSel = selects[2]; // 결제주기 select
     if (inputs[0]?.value.trim()) {
       yearly['y' + yIdx] = {
+        category: catSel ? catSel.value : '서비스',
         service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
         purpose: inputs[2].value.trim(), plan: inputs[3].value.trim(),
-        amount: inputs[4].value.trim(), cycle: sel ? sel.value : '연간',
+        currency: currSel ? currSel.value : 'KRW',
+        amount: inputs[4].value.trim(), cycle: cycleSel ? cycleSel.value : '연간',
         period: inputs[5].value.trim(), renewDate: inputs[6].value.trim(),
         dept: inputs[7].value.trim(), account: inputs[8].value.trim(),
         card: inputs[9].value.trim(), note: inputs[10].value.trim()
@@ -1608,6 +1733,8 @@ function renderAdminTeamDetail() {
   const data = allTeamsData[adminCurrentTeam];
   const mArr = data.monthly ? Object.values(data.monthly) : [];
   const yArr = data.yearly ? Object.values(data.yearly) : [];
+  const rate = getExchangeRate();
+  let teamMonthlyTotal = 0, teamYearlyTotal = 0, hasUsd = false;
 
   let html = `<div class="table-card"><div class="table-card-header"><h3>${adminCurrentTeam} 상세</h3>
       <div style="display:flex;gap:8px;align-items:center;">
@@ -1623,20 +1750,47 @@ function renderAdminTeamDetail() {
 
   if (mArr.length > 0) {
     html += `<div class="table-card"><div class="table-card-header"><h3>월 결제 — ${adminCurrentTeam}</h3><span class="example-badge badge-monthly">${mArr.length}건</span></div>
-      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
     mArr.forEach((r, i) => {
-      html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      const cur = r.currency || 'KRW';
+      const amt = parseAmount(r.amount);
+      const amtKrw = cur === 'USD' ? amt * rate : amt;
+      if (cur === 'USD') hasUsd = true;
+      teamMonthlyTotal += amtKrw;
+      const amtDisplay = cur === 'USD'
+        ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
+        : `${formatNumber(amt)}`;
+      html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
     });
+    html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="7" style="text-align:center;">월 결제 소계${hasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamMonthlyTotal))}원</td><td colspan="6"></td></tr>`;
     html += `</tbody></table></div></div>`;
   }
 
   if (yArr.length > 0) {
     html += `<div class="table-card"><div class="table-card-header"><h3>연 결제 — ${adminCurrentTeam}</h3><span class="example-badge badge-yearly">${yArr.length}건</span></div>
-      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
     yArr.forEach((r, i) => {
-      html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      const cur = r.currency || 'KRW';
+      const amt = parseAmount(r.amount);
+      const amtKrw = cur === 'USD' ? amt * rate : amt;
+      if (cur === 'USD') hasUsd = true;
+      teamYearlyTotal += amtKrw;
+      const amtDisplay = cur === 'USD'
+        ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
+        : `${formatNumber(amt)}`;
+      html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
     });
+    html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${hasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
     html += `</tbody></table></div></div>`;
+  }
+
+  // 팀 합계 표시
+  const teamTotal = teamMonthlyTotal + teamYearlyTotal;
+  if (teamTotal > 0) {
+    html += `<div class="card" style="background:var(--bg-warm);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:12px 16px;">
+      <span style="color:var(--text-secondary);">월 ${mArr.length}건 · 연 ${yArr.length}건${hasUsd ? ' · <span style="color:#9A3412;">적용 환율: 1 USD = '+formatNumber(rate)+'원</span>' : ''}</span>
+      <span style="font-weight:700;color:var(--primary);font-size:15px;">${adminCurrentTeam} 합계: ${formatNumber(Math.round(teamTotal))}원</span>
+    </div>`;
   }
 
   if (mArr.length === 0 && yArr.length === 0) {
@@ -1668,8 +1822,9 @@ function renderAdminAllDetail() {
     return;
   }
 
+  const rate = getExchangeRate();
   let html = '';
-  let grandMonthly = 0, grandYearly = 0, grandTotal = 0;
+  let grandMonthly = 0, grandYearly = 0, grandTotal = 0, grandHasUsd = false;
 
   teams.forEach(teamName => {
     const data = allTeamsData[teamName];
@@ -1678,7 +1833,7 @@ function renderAdminAllDetail() {
     if (mArr.length === 0 && yArr.length === 0) return;
 
     const safeTeam = teamName.replace(/\s/g,'_');
-    let teamMonthlyTotal = 0, teamYearlyTotal = 0;
+    let teamMonthlyTotal = 0, teamYearlyTotal = 0, teamHasUsd = false;
 
     html += `<div class="table-card" style="margin-bottom:24px;">
       <div class="table-card-header" style="border-bottom:2px solid var(--primary);">
@@ -1691,30 +1846,44 @@ function renderAdminAllDetail() {
 
     if (mArr.length > 0) {
       html += `<div style="padding:0 16px;"><div style="font-size:13px;font-weight:600;color:var(--accent);padding:12px 0 6px;display:flex;align-items:center;gap:6px;">월 결제 서비스 <span class="example-badge badge-monthly">${mArr.length}건</span></div>
-        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
       mArr.forEach((r, i) => {
-        const amt = parseAmount(r.amount); teamMonthlyTotal += amt;
-        html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+        const cur = r.currency || 'KRW';
+        const amt = parseAmount(r.amount);
+        const amtKrw = cur === 'USD' ? amt * rate : amt;
+        if (cur === 'USD') { teamHasUsd = true; grandHasUsd = true; }
+        teamMonthlyTotal += amtKrw;
+        const amtDisplay = cur === 'USD'
+          ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
+          : `${formatNumber(amt)}`;
+        html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
       });
-      html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="5" style="text-align:center;">월 결제 소계</td><td colspan="7" style="text-align:left;padding-left:8px;">${formatNumber(teamMonthlyTotal)}</td></tr>`;
+      html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="7" style="text-align:center;">월 결제 소계${teamHasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamMonthlyTotal))}원</td><td colspan="6"></td></tr>`;
       html += `</tbody></table></div></div>`;
     }
 
     if (yArr.length > 0) {
       html += `<div style="padding:0 16px;"><div style="font-size:13px;font-weight:600;color:#8B5CF6;padding:12px 0 6px;display:flex;align-items:center;gap:6px;">연 결제 서비스 <span class="example-badge badge-yearly">${yArr.length}건</span></div>
-        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
       yArr.forEach((r, i) => {
-        const amt = parseAmount(r.amount); teamYearlyTotal += amt;
-        html += `<tr><td>${i+1}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+        const cur = r.currency || 'KRW';
+        const amt = parseAmount(r.amount);
+        const amtKrw = cur === 'USD' ? amt * rate : amt;
+        if (cur === 'USD') { teamHasUsd = true; grandHasUsd = true; }
+        teamYearlyTotal += amtKrw;
+        const amtDisplay = cur === 'USD'
+          ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
+          : `${formatNumber(amt)}`;
+        html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
       });
-      html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="5" style="text-align:center;">연 결제 소계</td><td colspan="8" style="text-align:left;padding-left:8px;">${formatNumber(teamYearlyTotal)}</td></tr>`;
+      html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${teamHasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
       html += `</tbody></table></div></div>`;
     }
 
     const teamTotal = teamMonthlyTotal + teamYearlyTotal;
     html += `<div style="padding:12px 16px;background:var(--bg-warm);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;">
-      <span style="color:var(--text-secondary);">월 ${mArr.length}건 · 연 ${yArr.length}건</span>
-      <span style="font-weight:700;color:var(--primary);font-size:14px;">${teamName} 합계: ${formatNumber(teamTotal)}</span>
+      <span style="color:var(--text-secondary);">월 ${mArr.length}건 · 연 ${yArr.length}건${teamHasUsd ? ' · <span style="color:#9A3412;">환율: 1 USD = '+formatNumber(rate)+'원</span>' : ''}</span>
+      <span style="font-weight:700;color:var(--primary);font-size:14px;">${teamName} 합계: ${formatNumber(Math.round(teamTotal))}원</span>
     </div></div>`;
 
     grandMonthly += teamMonthlyTotal;
@@ -1726,10 +1895,11 @@ function renderAdminAllDetail() {
   if (grandTotal > 0) {
     html = `<div class="card" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;margin-bottom:20px;">
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;">
-        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">월 결제 합계</div><div style="font-size:20px;font-weight:700;">${formatNumber(grandMonthly)}</div></div>
-        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">연 결제 합계</div><div style="font-size:20px;font-weight:700;">${formatNumber(grandYearly)}</div></div>
-        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">전체 합계</div><div style="font-size:22px;font-weight:800;">${formatNumber(grandTotal)}</div></div>
+        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">월 결제 합계</div><div style="font-size:20px;font-weight:700;">${formatNumber(Math.round(grandMonthly))}원</div></div>
+        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">연 결제 합계</div><div style="font-size:20px;font-weight:700;">${formatNumber(Math.round(grandYearly))}원</div></div>
+        <div><div style="font-size:12px;opacity:0.7;margin-bottom:4px;">전체 합계</div><div style="font-size:22px;font-weight:800;">${formatNumber(Math.round(grandTotal))}원</div></div>
       </div>
+      ${grandHasUsd ? '<div style="text-align:center;font-size:11px;opacity:0.8;margin-top:8px;">※ USD 항목은 환율 1 USD = '+formatNumber(rate)+'원 기준 원화 환산 적용</div>' : ''}
     </div>` + html;
   }
 
@@ -1806,11 +1976,13 @@ function renderAnalyticsDashboard() {
     ? allTeams
     : allTeams.filter(t => allTeamsData[t]?.meta?.month === filterKey);
 
-  // ── 데이터 수집 ──
+  // ── 데이터 수집 (USD→KRW 환산 적용) ──
+  const rate = getExchangeRate();
   let totalMonthly = 0, totalYearly = 0;
   let totalServiceCount = 0;
+  let analyticsHasUsd = false;
   const teamData = []; // { name, monthly, yearly, total, monthlyEquiv, serviceCount }
-  const serviceMap = {}; // 서비스별 지출 합계
+  const categoryMap = {}; // 카테고리별 지출 합계
   const cardMap = {}; // 카드별 지출
 
   teams.forEach(t => {
@@ -1820,21 +1992,29 @@ function renderAnalyticsDashboard() {
     let tm = 0, ty = 0, yMonthly = 0;
 
     mArr.forEach(r => {
-      const a = parseAmount(r.amount); tm += a;
-      const sName = r.service || '기타';
-      serviceMap[sName] = (serviceMap[sName] || 0) + a;
+      const cur = r.currency || 'KRW';
+      const rawAmt = parseAmount(r.amount);
+      const a = cur === 'USD' ? rawAmt * rate : rawAmt;
+      if (cur === 'USD') analyticsHasUsd = true;
+      tm += a;
+      const catName = r.category || '서비스';
+      categoryMap[catName] = (categoryMap[catName] || 0) + a;
       const cKey = r.card ? `끝자리 ${r.card}` : '미입력';
       cardMap[cKey] = (cardMap[cKey] || 0) + a;
     });
     yArr.forEach(r => {
-      const a = parseAmount(r.amount); ty += a;
+      const cur = r.currency || 'KRW';
+      const rawAmt = parseAmount(r.amount);
+      const a = cur === 'USD' ? rawAmt * rate : rawAmt;
+      if (cur === 'USD') analyticsHasUsd = true;
+      ty += a;
       const cycle = r.cycle || '연간';
       let div = 12;
       if (cycle === '6개월') div = 6;
       else if (cycle === '3개월') div = 3;
       yMonthly += a / div;
-      const sName = r.service || '기타';
-      serviceMap[sName] = (serviceMap[sName] || 0) + (a / div);
+      const catName = r.category || '서비스';
+      categoryMap[catName] = (categoryMap[catName] || 0) + (a / div);
       const cKey = r.card ? `끝자리 ${r.card}` : '미입력';
       cardMap[cKey] = (cardMap[cKey] || 0) + (a / div);
     });
@@ -1856,9 +2036,9 @@ function renderAnalyticsDashboard() {
   const teamSorted = [...teamData].sort((a, b) => b.monthlyEquiv - a.monthlyEquiv);
   const maxTeamCost = teamSorted.length > 0 ? teamSorted[0].monthlyEquiv : 1;
 
-  // 서비스별 TOP 5
-  const svcSorted = Object.entries(serviceMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const maxSvcCost = svcSorted.length > 0 ? svcSorted[0][1] : 1;
+  // 카테고리별 비용 정렬
+  const catSorted = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
+  const maxCatCost = catSorted.length > 0 ? catSorted[0][1] : 1;
 
   // 카드별 정렬
   const cardSorted = Object.entries(cardMap).sort((a, b) => b[1] - a[1]);
@@ -1898,6 +2078,7 @@ function renderAnalyticsDashboard() {
         <div class="lbl" style="color:rgba(255,255,255,0.65);">총 서비스 수</div>
       </div>
     </div>
+    ${analyticsHasUsd ? '<div style="text-align:center;font-size:11px;opacity:0.8;margin-top:10px;">※ USD 항목은 환율 1 USD = '+formatNumber(rate)+'원 기준 원화 환산 적용</div>' : ''}
   </div>`;
 
   // ── 2열 그리드: 팀별 + 서비스별 ──
@@ -1917,19 +2098,22 @@ function renderAnalyticsDashboard() {
   });
   html += `</div>`;
 
-  // 서비스별 TOP 5
+  // 카테고리별 비용 비교
+  const catIcons = { '서비스': '🖥️', '사용 수수료': '💳', 'AI': '🤖', '광고': '📢' };
+  const catColors = { '서비스': '#3B82F6', '사용 수수료': '#8B5CF6', 'AI': '#10B981', '광고': '#F59E0B' };
   html += `<div class="analytics-card">
-    <div class="analytics-card-title"><span>💳</span> 서비스별 TOP 5 (월 환산)</div>`;
-  svcSorted.forEach((s, i) => {
-    const pct = maxSvcCost > 0 ? (s[1] / maxSvcCost * 100) : 0;
-    const color = barColors[(i + 2) % barColors.length];
+    <div class="analytics-card-title"><span>📂</span> 카테고리별 비용 비교 (월 환산)</div>`;
+  catSorted.forEach((s, i) => {
+    const pct = maxCatCost > 0 ? (s[1] / maxCatCost * 100) : 0;
+    const color = catColors[s[0]] || barColors[(i + 2) % barColors.length];
+    const icon = catIcons[s[0]] || '📌';
     html += `<div class="analytics-bar-row">
-      <div class="analytics-bar-label">${s[0]}</div>
+      <div class="analytics-bar-label">${icon} ${s[0]}</div>
       <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct, 8)}%;background:${color};">${Math.round(pct)}%</div></div>
       <div class="analytics-bar-amount">${formatNumber(Math.round(s[1]))}</div>
     </div>`;
   });
-  if (svcSorted.length === 0) html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">데이터 없음</div>`;
+  if (catSorted.length === 0) html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">데이터 없음</div>`;
   html += `</div>`;
 
   html += `</div>`; // analytics-grid 닫기
@@ -2037,6 +2221,47 @@ function formatAmountComma(val) {
 }
 
 // ══════════════════════════════════
+//  환율 API (USD → KRW)
+// ══════════════════════════════════
+let cachedExchangeRate = null;
+let cachedExchangeDate = null;
+
+async function fetchExchangeRate(forceRefresh) {
+  // 캐시가 있고 강제 새로고침이 아니면 캐시 사용
+  if (!forceRefresh && cachedExchangeRate) return cachedExchangeRate;
+
+  try {
+    // 한국수출입은행 API 대신 무료 API 사용
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    const data = await res.json();
+    if (data && data.rates && data.rates.KRW) {
+      cachedExchangeRate = Math.round(data.rates.KRW);
+      cachedExchangeDate = data.time_last_update_utc ? new Date(data.time_last_update_utc).toLocaleDateString('ko-KR') : new Date().toLocaleDateString('ko-KR');
+      // UI 업데이트
+      document.getElementById('exchangeRateDisplay').textContent = `1 USD = ${formatNumber(cachedExchangeRate)}원`;
+      document.getElementById('exchangeRateDate').textContent = `(${cachedExchangeDate} 기준)`;
+      updateStaffTotalSummary();
+      return cachedExchangeRate;
+    }
+  } catch (e) {
+    console.warn('환율 조회 실패, 기본값 사용:', e);
+  }
+
+  // 실패 시 기본 환율
+  if (!cachedExchangeRate) {
+    cachedExchangeRate = 1450;
+    cachedExchangeDate = '기본값';
+    document.getElementById('exchangeRateDisplay').textContent = `1 USD ≈ ${formatNumber(cachedExchangeRate)}원`;
+    document.getElementById('exchangeRateDate').textContent = `(API 조회 실패 - 기본값)`;
+  }
+  return cachedExchangeRate;
+}
+
+function getExchangeRate() {
+  return cachedExchangeRate || 1450;
+}
+
+// ══════════════════════════════════
 //  Staff: 품의서 양식 변환
 // ══════════════════════════════════
 function formatKorDate(dateStr) {
@@ -2062,17 +2287,27 @@ function renderStaffApprovalForm() {
   updateApprovalPeriodDisplay();
   const periodKor = getApprovalPeriodKor();
 
-  // 데이터 분류
+  // 데이터 분류 (통화별 환산 포함)
+  const rate = getExchangeRate();
   let monthlyTotal = 0, yearlyTotal = 0;
+  let hasUsdItem = false;
   const monthlyItems = [], yearlyItems = [];
 
   Object.values(formData.monthly).forEach(r => {
-    const amt = parseAmount(r.amount); monthlyTotal += amt;
-    monthlyItems.push({ ...r, amountNum: amt });
+    const amt = parseAmount(r.amount);
+    const cur = r.currency || 'KRW';
+    const amtKrw = cur === 'USD' ? amt * rate : amt;
+    if (cur === 'USD') hasUsdItem = true;
+    monthlyTotal += amtKrw;
+    monthlyItems.push({ ...r, amountNum: amt, amountKrw: amtKrw });
   });
   Object.values(formData.yearly).forEach(r => {
-    const amt = parseAmount(r.amount); yearlyTotal += amt;
-    yearlyItems.push({ ...r, amountNum: amt });
+    const amt = parseAmount(r.amount);
+    const cur = r.currency || 'KRW';
+    const amtKrw = cur === 'USD' ? amt * rate : amt;
+    if (cur === 'USD') hasUsdItem = true;
+    yearlyTotal += amtKrw;
+    yearlyItems.push({ ...r, amountNum: amt, amountKrw: amtKrw });
   });
   const totalAmount = monthlyTotal + yearlyTotal;
 
@@ -2087,7 +2322,7 @@ function renderStaffApprovalForm() {
     let div = 12;
     if (cycle === '6개월') div = 6;
     else if (cycle === '3개월') div = 3;
-    yearlyMonthly += r.amountNum / div;
+    yearlyMonthly += r.amountKrw / div;
   });
   const monthlyEquiv = monthlyTotal + yearlyMonthly;
 
@@ -2115,10 +2350,11 @@ function renderStaffApprovalForm() {
   bodyHtml += `<p style="font-size:14px;line-height:2.2;margin:2px 0;"><strong>1. 사용자</strong> : ${user}</p>`;
   bodyHtml += `<p style="font-size:14px;line-height:2.2;margin:2px 0;"><strong>2. 카드사용기간</strong> : ${periodKor}</p>`;
   bodyHtml += `<p style="font-size:14px;line-height:2.2;margin:2px 0;"><strong>3. 사용 내역</strong> : 하기 상세 내역 참조</p>`;
-  bodyHtml += `<p style="font-size:14px;line-height:2.2;margin:2px 0;"><strong>4. 지급금액 합계</strong> : ${formatNumber(Math.round(totalAmount))}원</p>`;
+  bodyHtml += `<p style="font-size:14px;line-height:2.2;margin:2px 0;"><strong>4. 지급금액 합계</strong> : ${formatNumber(Math.round(totalAmount))}원${hasUsdItem ? ' (원화 환산 기준)' : ''}</p>`;
   if (monthlyTotal > 0) bodyHtml += `<p style="font-size:13px;line-height:2;margin:0;padding-left:62px;color:#444;">- 월 결제 소계 : ${formatNumber(Math.round(monthlyTotal))}원</p>`;
   if (yearlyTotal > 0) bodyHtml += `<p style="font-size:13px;line-height:2;margin:0;padding-left:62px;color:#444;">- 연 결제 소계 : ${formatNumber(Math.round(yearlyTotal))}원</p>`;
   bodyHtml += `<p style="font-size:13px;line-height:2;margin:0;padding-left:62px;color:#444;">- 월 환산 합계 : ${formatNumber(Math.round(monthlyEquiv))}원/월</p>`;
+  if (hasUsdItem) bodyHtml += `<p style="font-size:12px;line-height:2;margin:0;padding-left:62px;color:#888;">※ 적용 환율: 1 USD = ${formatNumber(rate)}원 (${cachedExchangeDate || new Date().toLocaleDateString('ko-KR')} 기준)</p>`;
   bodyHtml += `<p style="font-size:14px;line-height:2.2;margin:2px 0;"><strong>5. 결제방법</strong> : 법인카드 자동결제</p>`;
 
   // ─── 월 결제 테이블 ───
@@ -2127,6 +2363,7 @@ function renderStaffApprovalForm() {
     bodyHtml += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin:6px 0 16px;">
       <thead><tr>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">No</th>
+        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카테고리</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">서비스명</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">공급업체</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">구매 목적</th>
@@ -2135,19 +2372,22 @@ function renderStaffApprovalForm() {
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카드(끝4자리)</th>
       </tr></thead><tbody>`;
     monthlyItems.forEach((r, i) => {
+      const cur = r.currency || 'KRW';
+      const amtDisplay = cur === 'USD' ? `USD ${r.amount||''}` : (r.amount||'');
       bodyHtml += `<tr>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${i+1}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'서비스'}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.vendor||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;">${r.purpose||''}</td>
-        <td style="border:1px solid #aaa;padding:6px 8px;text-align:right;padding-right:10px;font-weight:600;">${r.amount||''}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:right;padding-right:10px;font-weight:600;">${amtDisplay}${cur==='USD' ? '<br><span style="font-size:10px;color:#888;">(≈'+formatNumber(Math.round(r.amountKrw))+'원)</span>' : ''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.payDate||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.card||''}</td>
       </tr>`;
     });
     bodyHtml += `</tbody><tfoot><tr>
-      <td colspan="4" style="border:1px solid #aaa;padding:8px;text-align:center;background:#f0f4ff;font-weight:700;">월 결제 소계</td>
-      <td style="border:1px solid #aaa;padding:8px;text-align:right;padding-right:10px;background:#f0f4ff;font-weight:700;">${formatNumber(Math.round(monthlyTotal))}</td>
+      <td colspan="5" style="border:1px solid #aaa;padding:8px;text-align:center;background:#f0f4ff;font-weight:700;">월 결제 소계 (원화 환산)</td>
+      <td style="border:1px solid #aaa;padding:8px;text-align:right;padding-right:10px;background:#f0f4ff;font-weight:700;">${formatNumber(Math.round(monthlyTotal))}원</td>
       <td colspan="2" style="border:1px solid #aaa;background:#f0f4ff;"></td>
     </tr></tfoot></table>`;
   }
@@ -2158,6 +2398,7 @@ function renderStaffApprovalForm() {
     bodyHtml += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin:6px 0 16px;">
       <thead><tr>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">No</th>
+        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카테고리</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">서비스명</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">공급업체</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">구매 목적</th>
@@ -2168,12 +2409,15 @@ function renderStaffApprovalForm() {
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카드(끝4자리)</th>
       </tr></thead><tbody>`;
     yearlyItems.forEach((r, i) => {
+      const cur = r.currency || 'KRW';
+      const amtDisplay = cur === 'USD' ? `USD ${r.amount||''}` : (r.amount||'');
       bodyHtml += `<tr>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${i+1}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'서비스'}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.vendor||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;">${r.purpose||''}</td>
-        <td style="border:1px solid #aaa;padding:6px 8px;text-align:right;padding-right:10px;font-weight:700;">${r.amount||''}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:right;padding-right:10px;font-weight:700;">${amtDisplay}${cur==='USD' ? '<br><span style="font-size:10px;color:#888;">(≈'+formatNumber(Math.round(r.amountKrw))+'원)</span>' : ''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.cycle||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.period||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.renewDate||''}</td>
@@ -2181,8 +2425,8 @@ function renderStaffApprovalForm() {
       </tr>`;
     });
     bodyHtml += `</tbody><tfoot><tr>
-      <td colspan="4" style="border:1px solid #aaa;padding:8px;text-align:center;background:#f0f4ff;font-weight:700;">연 결제 소계</td>
-      <td style="border:1px solid #aaa;padding:8px;text-align:right;padding-right:10px;background:#f0f4ff;font-weight:700;">${formatNumber(Math.round(yearlyTotal))}</td>
+      <td colspan="5" style="border:1px solid #aaa;padding:8px;text-align:center;background:#f0f4ff;font-weight:700;">연 결제 소계 (원화 환산)</td>
+      <td style="border:1px solid #aaa;padding:8px;text-align:right;padding-right:10px;background:#f0f4ff;font-weight:700;">${formatNumber(Math.round(yearlyTotal))}원</td>
       <td colspan="4" style="border:1px solid #aaa;background:#f0f4ff;"></td>
     </tr></tfoot></table>`;
   }
@@ -2292,16 +2536,26 @@ function renderApprovalForTeam(teamName) {
   const pe = document.getElementById('approvalEnd').value || '';
   const period = ps && pe ? `${ps} ~ ${pe}` : '기간 미설정';
 
+  const rate = getExchangeRate();
   let totalAmount = 0;
+  let approvalHasUsd = false;
   const allItems = [];
 
   (data.monthly ? Object.values(data.monthly) : []).forEach(r => {
-    const amt = parseAmount(r.amount); totalAmount += amt;
-    allItems.push({ ...r, amountNum: amt, type: 'monthly' });
+    const cur = r.currency || 'KRW';
+    const amt = parseAmount(r.amount);
+    const amtKrw = cur === 'USD' ? amt * rate : amt;
+    if (cur === 'USD') approvalHasUsd = true;
+    totalAmount += amtKrw;
+    allItems.push({ ...r, amountNum: amt, amountKrw: amtKrw, type: 'monthly' });
   });
   (data.yearly ? Object.values(data.yearly) : []).forEach(r => {
-    const amt = parseAmount(r.amount); totalAmount += amt;
-    allItems.push({ ...r, amountNum: amt, type: 'yearly' });
+    const cur = r.currency || 'KRW';
+    const amt = parseAmount(r.amount);
+    const amtKrw = cur === 'USD' ? amt * rate : amt;
+    if (cur === 'USD') approvalHasUsd = true;
+    totalAmount += amtKrw;
+    allItems.push({ ...r, amountNum: amt, amountKrw: amtKrw, type: 'yearly' });
   });
 
   const safeTeam = teamName.replace(/\s/g,'_');
@@ -2320,8 +2574,9 @@ function renderApprovalForTeam(teamName) {
             <tr><td class="cat-label">1. 사용자</td><td colspan="3">${user}</td></tr>
             <tr><td class="cat-label">2. 카드사용기간</td><td colspan="3">${period}</td></tr>
             <tr><td colspan="4" class="section-header">3. 사용 상세금액</td></tr>
-            <tr><td class="cat-label">기타 (고정지출)</td><td class="amount-cell" colspan="3">${formatNumber(totalAmount)}</td></tr>
-            <tr class="total-row"><td style="font-weight:700;">합계</td><td class="amount-cell" colspan="3">${formatNumber(totalAmount)}</td></tr>
+            <tr><td class="cat-label">기타 (고정지출)</td><td class="amount-cell" colspan="3">${formatNumber(Math.round(totalAmount))}원${approvalHasUsd ? ' (원화 환산)' : ''}</td></tr>
+            <tr class="total-row"><td style="font-weight:700;">합계</td><td class="amount-cell" colspan="3">${formatNumber(Math.round(totalAmount))}원${approvalHasUsd ? ' (원화 환산)' : ''}</td></tr>
+            ${approvalHasUsd ? '<tr><td colspan="4" style="font-size:11px;color:#888;text-align:center;padding:6px;">※ 적용 환율: 1 USD = '+formatNumber(rate)+'원</td></tr>' : ''}
           </tbody>
         </table>
       </div>
@@ -2336,9 +2591,13 @@ function renderApprovalForTeam(teamName) {
           <tbody>`;
   allItems.forEach((it, idx) => {
     const dp = it.type === 'monthly' ? (it.payDate||'') : (it.period||'');
-    html += `<tr><td>${idx+1}</td><td style="text-align:left;padding-left:8px;font-weight:600;">${it.service}</td><td>${it.vendor||''}</td><td style="text-align:right;padding-right:8px;font-weight:600;">${it.amount}</td><td>${it.cycle||''}</td><td>${dp}</td><td>${it.card||''}</td><td>기타</td><td style="text-align:left;padding-left:8px;">${it.purpose||''}</td></tr>`;
+    const cur = it.currency || 'KRW';
+    const amtDisplay = cur === 'USD'
+      ? `USD ${formatNumber(it.amountNum)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(it.amountKrw))}원)</span>`
+      : `${formatNumber(it.amountNum)}`;
+    html += `<tr><td>${idx+1}</td><td style="text-align:left;padding-left:8px;font-weight:600;">${it.service}</td><td>${it.vendor||''}</td><td style="text-align:right;padding-right:8px;font-weight:600;">${amtDisplay}</td><td>${it.cycle||''}</td><td>${dp}</td><td>${it.card||''}</td><td>기타</td><td style="text-align:left;padding-left:8px;">${it.purpose||''}</td></tr>`;
   });
-  html += `</tbody><tfoot><tr style="background:#EFF6FF;font-weight:700;"><td colspan="3" style="border:1px solid #999;padding:10px;text-align:center;">합계</td><td style="border:1px solid #999;text-align:right;padding-right:8px;">${formatNumber(totalAmount)}</td><td colspan="5" style="border:1px solid #999;"></td></tr></tfoot>
+  html += `</tbody><tfoot><tr style="background:#EFF6FF;font-weight:700;"><td colspan="3" style="border:1px solid #999;padding:10px;text-align:center;">합계${approvalHasUsd?' (원화 환산)':''}</td><td style="border:1px solid #999;text-align:right;padding-right:8px;">${formatNumber(Math.round(totalAmount))}원</td><td colspan="5" style="border:1px solid #999;"></td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -2382,18 +2641,18 @@ function buildCSVForTeam(teamName) {
 
   const mArr = data.monthly ? Object.values(data.monthly) : [];
   if (mArr.length > 0) {
-    csv += `"[월 결제 서비스]"\n"No.","서비스명","공급업체","구매 목적","이용 플랜","월 금액","결제주기","정기결제일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    csv += `"[월 결제 서비스]"\n"No.","카테고리","서비스명","공급업체","구매 목적","이용 플랜","통화","월 금액","결제주기","정기결제일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
     mArr.forEach((r, i) => {
-      csv += `"${i+1}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.payDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+      csv += `"${i+1}","${csvSafe(r.category||'서비스')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.payDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
     });
     csv += '\n';
   }
 
   const yArr = data.yearly ? Object.values(data.yearly) : [];
   if (yArr.length > 0) {
-    csv += `"[연 결제 서비스]"\n"No.","서비스명","공급업체","구매 목적","이용 플랜","연 금액","결제주기","기간","갱신일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    csv += `"[연 결제 서비스]"\n"No.","카테고리","서비스명","공급업체","구매 목적","이용 플랜","통화","연 금액","결제주기","기간","갱신일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
     yArr.forEach((r, i) => {
-      csv += `"${i+1}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+      csv += `"${i+1}","${csvSafe(r.category||'서비스')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
     });
   }
 
@@ -2442,8 +2701,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const monthStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0');
   const staffMonthInput = document.getElementById('staffMonth');
+  const yearSelect = document.getElementById('staffMonthYear');
+  const monthSelect = document.getElementById('staffMonthMonth');
+
+  // ── 연도/월 드롭다운 옵션 생성 ──
+  const currentYear = today.getFullYear();
+  for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + '년';
+    if (y === currentYear) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+  for (let m = 1; m <= 12; m++) {
+    const opt = document.createElement('option');
+    opt.value = String(m).padStart(2, '0');
+    opt.textContent = m + '월';
+    if (m === today.getMonth() + 1) opt.selected = true;
+    monthSelect.appendChild(opt);
+  }
+
   staffMonthInput.value = monthStr;
   updateMonthPreview(monthStr);
+
+  // ── 드롭다운 → 텍스트 입력 동기화 ──
+  let isSelectUpdating = false;
+  function onSelectChange() {
+    if (isSelectUpdating) return;
+    const val = yearSelect.value + monthSelect.value;
+    staffMonthInput.value = val;
+    updateMonthPreview(val);
+  }
+  yearSelect.addEventListener('change', onSelectChange);
+  monthSelect.addEventListener('change', onSelectChange);
+
+  // ── 텍스트 입력 → 드롭다운 동기화 ──
+  function syncSelectFromInput(v) {
+    if (v.length === 6) {
+      const y = v.substring(0, 4);
+      const m = v.substring(4, 6);
+      isSelectUpdating = true;
+      // 연도가 옵션에 없으면 추가
+      if (!yearSelect.querySelector(`option[value="${y}"]`)) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y + '년';
+        yearSelect.appendChild(opt);
+      }
+      yearSelect.value = y;
+      monthSelect.value = m;
+      isSelectUpdating = false;
+    }
+  }
 
   // 해당 월 자동 포맷 (202601 → 2026-01)
   staffMonthInput.addEventListener('input', function() {
@@ -2451,7 +2760,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (v.length > 6) v = v.substring(0, 6);
     this.value = v;
     updateMonthPreview(v);
+    syncSelectFromInput(v);
   });
+
+  // 초기 동기화
+  syncSelectFromInput(monthStr);
 
   function updateMonthPreview(v) {
     const preview = document.getElementById('staffMonthPreview');
@@ -2501,6 +2814,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     tbl.addEventListener('change', updateStaffTotalSummary);
   });
+
+  // 환율 자동 조회
+  fetchExchangeRate(false);
 
   initFirebase();
 });
