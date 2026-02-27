@@ -278,6 +278,55 @@
     .analytics-mini-grid { grid-template-columns: repeat(2, 1fr) !important; }
   }
 
+  /* ── Staff Team Analytics (직원모드 팀 비용분석) ── */
+  .staff-analytics-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: 20px;
+    border: 1.5px solid var(--accent); background: var(--accent-soft);
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    cursor: pointer; transition: all 0.2s; margin-left: auto;
+  }
+  .staff-analytics-toggle:hover { background: var(--accent); color: #fff; }
+  .staff-analytics-toggle.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
+  .staff-analytics-panel {
+    display: none; margin-top: 16px;
+    animation: staffAnalyticsFadeIn 0.35s ease;
+  }
+  .staff-analytics-panel.show { display: block; }
+  @keyframes staffAnalyticsFadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .staff-analytics-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  .staff-analytics-summary .sa-item {
+    text-align: center; padding: 16px 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);
+  }
+  .sa-item .sa-val { font-size: 20px; font-weight: 800; color: var(--primary); }
+  .sa-item .sa-lbl { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+  .sa-item .sa-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+  .staff-analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .sa-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); }
+  .sa-card-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+  .sa-card-title span { font-size: 15px; }
+  .sa-service-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+  .sa-service-row:last-child { border-bottom: none; }
+  .sa-svc-rank { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .sa-svc-name { flex: 1; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sa-svc-cat { font-size: 10px; color: var(--text-muted); padding: 2px 6px; background: var(--bg); border-radius: 4px; flex-shrink: 0; }
+  .sa-svc-amount { font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; flex-shrink: 0; min-width: 80px; text-align: right; }
+  .sa-svc-cycle { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+  .sa-donut-container { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 10px 0; }
+  .sa-donut-legend { display: flex; flex-direction: column; gap: 6px; }
+  .sa-donut-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text); }
+  .sa-donut-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .sa-donut-legend-val { font-weight: 700; color: var(--primary); margin-left: auto; min-width: 60px; text-align: right; }
+  @media (max-width:640px) {
+    .staff-analytics-summary { grid-template-columns: repeat(2, 1fr); }
+    .staff-analytics-grid { grid-template-columns: 1fr; }
+    .team-selector-title { flex-wrap: wrap; }
+  }
+
   /* ── Upload Zone ── */
   .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-warm); }
   .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-soft); }
@@ -504,13 +553,20 @@
 
   <!-- Team Selector -->
   <div class="team-selector">
-    <div class="team-selector-title">👤 본인 팀을 선택하세요</div>
+    <div class="team-selector-title">
+      👤 본인 팀을 선택하세요
+      <button class="staff-analytics-toggle" id="staffAnalyticsToggle" onclick="toggleStaffAnalytics()" style="display:none;">
+        📊 우리팀 비용분석
+      </button>
+    </div>
     <div class="team-tabs" id="teamTabs"></div>
     <div class="quick-join">
       <span style="font-size:12px;color:var(--text-muted);">팀이 없으신가요?</span>
       <input type="text" id="newTeamInput" placeholder="새 팀명 입력">
       <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="addNewTeam()">팀 추가</button>
     </div>
+    <!-- Staff Team Analytics Panel -->
+    <div class="staff-analytics-panel" id="staffAnalyticsPanel"></div>
   </div>
 
   <!-- Submitted Banner (shown if already submitted) -->
@@ -1114,6 +1170,7 @@ function initFirebase() {
     // If on staff mode and team selected, check if data changed
     if (currentTeam && allTeamsData[currentTeam]) {
       updateSubmittedBanner();
+      if (staffAnalyticsOpen) renderStaffTeamAnalytics();
     }
     // Hide loading
     const lo = document.getElementById('loadingOverlay');
@@ -1170,6 +1227,302 @@ function renderTeamTabs() {
       </div>`;
     }).join('');
   }
+
+  // 비용분석 토글 버튼 표시/숨김
+  const toggleBtn = document.getElementById('staffAnalyticsToggle');
+  if (toggleBtn) {
+    if (currentTeam && allTeamsData[currentTeam]) {
+      const d = allTeamsData[currentTeam];
+      const mArr = d.monthly ? Object.values(d.monthly) : [];
+      const yArr = d.yearly ? Object.values(d.yearly) : [];
+      toggleBtn.style.display = (mArr.length + yArr.length) > 0 ? 'inline-flex' : 'none';
+    } else {
+      toggleBtn.style.display = 'none';
+      // 팀 미선택 시 패널도 닫기
+      const panel = document.getElementById('staffAnalyticsPanel');
+      if (panel) { panel.classList.remove('show'); panel.innerHTML = ''; }
+      toggleBtn.classList.remove('active');
+    }
+  }
+}
+
+// ── Staff Analytics Toggle ──
+let staffAnalyticsOpen = false;
+
+function toggleStaffAnalytics() {
+  staffAnalyticsOpen = !staffAnalyticsOpen;
+  const btn = document.getElementById('staffAnalyticsToggle');
+  const panel = document.getElementById('staffAnalyticsPanel');
+  if (staffAnalyticsOpen) {
+    btn.classList.add('active');
+    panel.classList.add('show');
+    renderStaffTeamAnalytics();
+  } else {
+    btn.classList.remove('active');
+    panel.classList.remove('show');
+    panel.innerHTML = '';
+  }
+}
+
+// ══════════════════════════════════
+//  Staff Team Analytics (직원모드 팀 비용분석)
+// ══════════════════════════════════
+function renderStaffTeamAnalytics() {
+  const panel = document.getElementById('staffAnalyticsPanel');
+  if (!panel || !currentTeam || !allTeamsData[currentTeam]) return;
+
+  const data = allTeamsData[currentTeam];
+  const mArr = data.monthly ? Object.values(data.monthly) : [];
+  const yArr = data.yearly ? Object.values(data.yearly) : [];
+  const rate = getExchangeRate();
+
+  if (mArr.length + yArr.length === 0) {
+    panel.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">등록된 지출 내역이 없습니다.</div>';
+    return;
+  }
+
+  // ── 데이터 수집 ──
+  let totalMonthly = 0, totalYearly = 0, totalMonthlyEquiv = 0;
+  let hasUsd = false;
+  const categoryMap = {};
+  const serviceList = []; // { name, category, amount, amountEquiv, currency, cycle, type }
+
+  mArr.forEach(r => {
+    const cur = r.currency || 'KRW';
+    const rawAmt = parseAmount(r.amount);
+    const amt = cur === 'USD' ? rawAmt * rate : rawAmt;
+    if (cur === 'USD') hasUsd = true;
+    totalMonthly += amt;
+    totalMonthlyEquiv += amt;
+    const cat = r.category || '서비스';
+    categoryMap[cat] = (categoryMap[cat] || 0) + amt;
+    serviceList.push({
+      name: r.service || '(미입력)',
+      category: cat,
+      amount: rawAmt,
+      amountKrw: amt,
+      currency: cur,
+      cycle: '월별',
+      type: 'monthly',
+      vendor: r.vendor || '',
+      purpose: r.purpose || ''
+    });
+  });
+
+  yArr.forEach(r => {
+    const cur = r.currency || 'KRW';
+    const rawAmt = parseAmount(r.amount);
+    const amt = cur === 'USD' ? rawAmt * rate : rawAmt;
+    if (cur === 'USD') hasUsd = true;
+    totalYearly += amt;
+    const cycle = r.cycle || '연간';
+    let div = 12;
+    if (cycle === '6개월') div = 6;
+    else if (cycle === '3개월') div = 3;
+    const monthEquiv = amt / div;
+    totalMonthlyEquiv += monthEquiv;
+    const cat = r.category || '서비스';
+    categoryMap[cat] = (categoryMap[cat] || 0) + monthEquiv;
+    serviceList.push({
+      name: r.service || '(미입력)',
+      category: cat,
+      amount: rawAmt,
+      amountKrw: amt,
+      amountMonthEquiv: monthEquiv,
+      currency: cur,
+      cycle: cycle,
+      type: 'yearly',
+      vendor: r.vendor || '',
+      purpose: r.purpose || ''
+    });
+  });
+
+  // 서비스 정렬 (월 환산 기준 내림차순)
+  serviceList.forEach(s => {
+    if (!s.amountMonthEquiv) s.amountMonthEquiv = s.amountKrw;
+  });
+  serviceList.sort((a, b) => b.amountMonthEquiv - a.amountMonthEquiv);
+
+  const totalSvcCount = mArr.length + yArr.length;
+  const annualProjection = Math.round(totalMonthlyEquiv * 12);
+
+  // 누적 계산 (1월~현재월)
+  const now = new Date();
+  const monthsElapsed = now.getMonth() + 1; // 1~12
+  const cumulativeTotal = Math.round(totalMonthlyEquiv * monthsElapsed);
+
+  // 카테고리 정렬
+  const catSorted = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
+  const catTotal = catSorted.reduce((s, c) => s + c[1], 0);
+  const catIcons = { '서비스': '🖥️', '사용 수수료': '💳', 'AI': '🤖', '광고': '📢' };
+  const catColors = { '서비스': '#3B82F6', '사용 수수료': '#8B5CF6', 'AI': '#10B981', '광고': '#F59E0B' };
+  const barColors = ['#3B82F6','#8B5CF6','#F59E0B','#10B981','#EF4444','#EC4899','#06B6D4','#84CC16'];
+
+  let html = '';
+
+  // ── 1) 비용 요약 카드 ──
+  html += `<div style="background:linear-gradient(135deg,#1E40AF,#3B82F6);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;color:#fff;">
+    <div style="font-size:12px;font-weight:600;opacity:0.75;margin-bottom:14px;">📊 ${currentTeam} 비용 요약</div>
+    <div class="staff-analytics-summary" style="margin-bottom:0;grid-template-columns:repeat(5,1fr);">
+      <div class="sa-item" style="background:rgba(255,255,255,0.12);border:none;">
+        <div class="sa-val" style="color:#fff;">${formatNumber(Math.round(totalMonthlyEquiv))}</div>
+        <div class="sa-lbl" style="color:rgba(255,255,255,0.65);">월간 총액</div>
+      </div>
+      <div class="sa-item" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);">
+        <div class="sa-val" style="color:#FDE68A;font-size:22px;">${formatNumber(cumulativeTotal)}</div>
+        <div class="sa-lbl" style="color:rgba(255,255,255,0.8);">누적 (1~${monthsElapsed}월)</div>
+      </div>
+      <div class="sa-item" style="background:rgba(255,255,255,0.12);border:none;">
+        <div class="sa-val" style="color:#fff;">${formatNumber(annualProjection)}</div>
+        <div class="sa-lbl" style="color:rgba(255,255,255,0.65);">연간 예상 총액</div>
+      </div>
+      <div class="sa-item" style="background:rgba(255,255,255,0.12);border:none;">
+        <div class="sa-val" style="color:#fff;">${totalSvcCount}<span style="font-size:11px;opacity:0.7;">건</span></div>
+        <div class="sa-lbl" style="color:rgba(255,255,255,0.65);">총 서비스 수</div>
+      </div>
+      <div class="sa-item" style="background:rgba(255,255,255,0.12);border:none;">
+        <div class="sa-val" style="color:#fff;">${mArr.length}/${yArr.length}</div>
+        <div class="sa-lbl" style="color:rgba(255,255,255,0.65);">월별/연간 건수</div>
+      </div>
+    </div>
+    ${hasUsd ? '<div style="text-align:center;font-size:10px;opacity:0.7;margin-top:10px;">※ USD → KRW 환율 1 USD = '+formatNumber(rate)+'원 적용</div>' : ''}
+  </div>`;
+
+  // ── 2) 2열 그리드: 카테고리 비율 + 비용 구성 ──
+  html += `<div class="staff-analytics-grid">`;
+
+  // 카테고리별 비용 비율
+  const maxCatCost = catSorted.length > 0 ? catSorted[0][1] : 1;
+  html += `<div class="sa-card">
+    <div class="sa-card-title"><span>📂</span> 카테고리별 비용 비율</div>`;
+  if (catSorted.length > 0) {
+    // SVG 도넛 차트
+    const donutSize = 100;
+    const cx = donutSize / 2, cy = donutSize / 2, r = 36, strokeW = 16;
+    let cumAngle = -90;
+    let donutPaths = '';
+    const circumference = 2 * Math.PI * r;
+    catSorted.forEach((c, i) => {
+      const pct = catTotal > 0 ? c[1] / catTotal : 0;
+      const dashLen = circumference * pct;
+      const dashGap = circumference - dashLen;
+      const rotation = cumAngle;
+      const color = catColors[c[0]] || barColors[i % barColors.length];
+      donutPaths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeW}"
+        stroke-dasharray="${dashLen} ${dashGap}"
+        transform="rotate(${rotation} ${cx} ${cy})" style="transition:stroke-dasharray 0.5s;" />`;
+      cumAngle += 360 * pct;
+    });
+    html += `<div class="sa-donut-container">
+      <svg width="${donutSize}" height="${donutSize}" viewBox="0 0 ${donutSize} ${donutSize}">
+        ${donutPaths}
+        <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--primary)">${catSorted.length}개</text>
+      </svg>
+      <div class="sa-donut-legend">`;
+    catSorted.forEach((c, i) => {
+      const pct = catTotal > 0 ? (c[1] / catTotal * 100).toFixed(1) : 0;
+      const color = catColors[c[0]] || barColors[i % barColors.length];
+      const icon = catIcons[c[0]] || '📌';
+      html += `<div class="sa-donut-legend-item">
+        <div class="sa-donut-legend-dot" style="background:${color};"></div>
+        <span>${icon} ${c[0]}</span>
+        <span class="sa-donut-legend-val">${pct}%</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+    // 금액 바 차트
+    catSorted.forEach((c, i) => {
+      const pct = maxCatCost > 0 ? (c[1] / maxCatCost * 100) : 0;
+      const color = catColors[c[0]] || barColors[i % barColors.length];
+      const icon = catIcons[c[0]] || '📌';
+      html += `<div class="analytics-bar-row" style="margin-top:${i === 0 ? '12px' : '0'};">
+        <div class="analytics-bar-label" style="width:80px;">${icon} ${c[0]}</div>
+        <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct, 8)}%;background:${color};">${Math.round(catTotal > 0 ? c[1] / catTotal * 100 : 0)}%</div></div>
+        <div class="analytics-bar-amount">${formatNumber(Math.round(c[1]))}</div>
+      </div>`;
+    });
+  } else {
+    html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">데이터 없음</div>`;
+  }
+  html += `</div>`;
+
+  // 비용 구성 (월 vs 연)
+  const grandTotal = totalMonthly + totalYearly;
+  const mPct = grandTotal > 0 ? Math.round(totalMonthly / grandTotal * 100) : 0;
+  const yPct = 100 - mPct;
+  html += `<div class="sa-card">
+    <div class="sa-card-title"><span>📈</span> 비용 구성</div>
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;height:28px;border-radius:6px;overflow:hidden;margin-bottom:8px;">
+        <div style="width:${mPct}%;background:#3B82F6;transition:width 0.5s;"></div>
+        <div style="width:${yPct}%;background:#8B5CF6;transition:width 0.5s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);">
+        <span>🔵 월 결제 ${mPct}%</span>
+        <span>🟣 연 결제 ${yPct}%</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="padding:14px;background:#EFF6FF;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:17px;font-weight:800;color:#1D4ED8;">${formatNumber(Math.round(totalMonthly))}</div>
+        <div style="font-size:10px;color:#3B82F6;margin-top:3px;">월 결제 총액</div>
+      </div>
+      <div style="padding:14px;background:#EDE9FE;border-radius:var(--radius-sm);text-align:center;">
+        <div style="font-size:17px;font-weight:800;color:#6D28D9;">${formatNumber(Math.round(totalYearly))}</div>
+        <div style="font-size:10px;color:#8B5CF6;margin-top:3px;">연 결제 총액</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);text-align:center;">
+      <div style="font-size:10px;color:var(--text-muted);">서비스당 평균 월 비용</div>
+      <div style="font-size:18px;font-weight:800;color:var(--primary);margin-top:2px;">${totalSvcCount > 0 ? formatNumber(Math.round(totalMonthlyEquiv / totalSvcCount)) : 0}</div>
+    </div>
+  </div>`;
+
+  html += `</div>`; // staff-analytics-grid 닫기
+
+  // ── 3) 서비스별 지출 상세 (전체) ──
+  html += `<div class="sa-card" style="margin-bottom:16px;">
+    <div class="sa-card-title"><span>💎</span> 서비스별 지출 상세</div>
+    <div style="display:flex;align-items:center;padding:6px 0 8px;border-bottom:2px solid var(--border);margin-bottom:4px;font-size:10px;font-weight:700;color:var(--text-muted);gap:10px;">
+      <div style="width:22px;text-align:center;">#</div>
+      <div style="flex:1;">서비스명</div>
+      <div style="width:60px;text-align:center;">카테고리</div>
+      <div style="width:30px;text-align:center;">주기</div>
+      <div style="min-width:85px;text-align:right;">월간</div>
+      <div style="min-width:85px;text-align:right;color:#B45309;">누적 (1~${monthsElapsed}월)</div>
+    </div>`;
+  const topColors = ['#EF4444','#F59E0B','#3B82F6','#8B5CF6','#10B981','#EC4899','#06B6D4','#84CC16'];
+  serviceList.forEach((s, i) => {
+    const color = topColors[i % topColors.length];
+    const cycleLabel = s.type === 'monthly' ? '월' : s.cycle;
+    const displayAmt = s.currency === 'USD'
+      ? `$${formatNumber(s.amount)} (₩${formatNumber(Math.round(s.amountKrw))})`
+      : `₩${formatNumber(Math.round(s.amountKrw))}`;
+    const equivLabel = s.type === 'yearly' ? `<span style="font-size:10px;color:var(--text-muted);"> (월 ₩${formatNumber(Math.round(s.amountMonthEquiv))})</span>` : '';
+    const cumulativeAmt = Math.round(s.amountMonthEquiv * monthsElapsed);
+
+    html += `<div class="sa-service-row">
+      <div class="sa-svc-rank" style="background:${color};">${i + 1}</div>
+      <div class="sa-svc-name" title="${s.vendor ? s.vendor + ' | ' : ''}${s.purpose}">${s.name}</div>
+      <div class="sa-svc-cat">${catIcons[s.category] || '📌'} ${s.category}</div>
+      <div class="sa-svc-cycle">${cycleLabel}</div>
+      <div class="sa-svc-amount">${displayAmt}${equivLabel}</div>
+      <div style="min-width:85px;text-align:right;font-weight:700;color:#B45309;font-size:12px;font-variant-numeric:tabular-nums;flex-shrink:0;">₩${formatNumber(cumulativeAmt)}</div>
+    </div>`;
+  });
+
+  // 합계
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;border-top:2px solid var(--border);margin-top:6px;font-size:12px;">
+    <div style="font-weight:700;color:var(--text-secondary);">합계</div>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <div style="text-align:right;"><div style="font-size:10px;color:var(--text-muted);">월간</div><div style="font-weight:800;color:var(--primary);font-size:15px;">₩${formatNumber(Math.round(totalMonthlyEquiv))}</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;color:#B45309;">누적 (1~${monthsElapsed}월)</div><div style="font-weight:800;color:#B45309;font-size:15px;">₩${formatNumber(cumulativeTotal)}</div></div>
+    </div>
+  </div>`;
+
+  html += `</div>`;
+
+  panel.innerHTML = html;
 }
 
 function selectTeam(teamName) {
@@ -1178,12 +1531,19 @@ function selectTeam(teamName) {
   renderTeamTabs();
   loadTeamDataToForm();
   updateSubmittedBanner();
+  if (staffAnalyticsOpen) renderStaffTeamAnalytics();
 }
 
 function unlockTeam() {
   if (!confirm('다른 팀으로 변경하시겠습니까?\n(현재 입력 중인 내용은 저장되지 않습니다.)')) return;
   currentTeam = null;
   localStorage.removeItem('cc_fixed_team');
+  // 비용분석 패널 닫기
+  staffAnalyticsOpen = false;
+  const saBtn = document.getElementById('staffAnalyticsToggle');
+  const saPanel = document.getElementById('staffAnalyticsPanel');
+  if (saBtn) saBtn.classList.remove('active');
+  if (saPanel) { saPanel.classList.remove('show'); saPanel.innerHTML = ''; }
   renderTeamTabs();
   // 폼 초기화
   ['staffWriter','staffMonth','staffNote'].forEach(id => document.getElementById(id).value = '');
@@ -2032,6 +2392,11 @@ function renderAnalyticsDashboard() {
   const grandMonthlyEquiv = teamData.reduce((s, d) => s + d.monthlyEquiv, 0);
   const grandTotal = totalMonthly + totalYearly;
 
+  // 누적 계산 (1월~현재월)
+  const adminNow = new Date();
+  const adminMonthsElapsed = adminNow.getMonth() + 1; // 1~12
+  const adminCumulativeTotal = Math.round(grandMonthlyEquiv * adminMonthsElapsed);
+
   // 팀별 비용 순 정렬
   const teamSorted = [...teamData].sort((a, b) => b.monthlyEquiv - a.monthlyEquiv);
   const maxTeamCost = teamSorted.length > 0 ? teamSorted[0].monthlyEquiv : 1;
@@ -2059,11 +2424,15 @@ function renderAnalyticsDashboard() {
 
   // ── 전체 요약 카드 ──
   html += `<div class="card" style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;margin-bottom:20px;padding:24px;">
-    <div style="font-size:13px;font-weight:600;opacity:0.7;margin-bottom:16px;">📊 비용 요약 — ${monthLabel} (월 환산 기준)</div>
-    <div class="analytics-mini-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div style="font-size:13px;font-weight:600;opacity:0.7;margin-bottom:16px;">📊 비용 요약 — ${monthLabel}</div>
+    <div class="analytics-mini-grid" style="grid-template-columns:repeat(5,1fr);">
       <div class="analytics-mini-item" style="background:rgba(255,255,255,0.12);">
         <div class="val" style="color:#fff;">${formatNumber(Math.round(grandMonthlyEquiv))}</div>
-        <div class="lbl" style="color:rgba(255,255,255,0.65);">월 환산 총액</div>
+        <div class="lbl" style="color:rgba(255,255,255,0.65);">월간 총액</div>
+      </div>
+      <div class="analytics-mini-item" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);">
+        <div class="val" style="color:#FDE68A;font-size:20px;">${formatNumber(adminCumulativeTotal)}</div>
+        <div class="lbl" style="color:rgba(255,255,255,0.8);">누적 (1~${adminMonthsElapsed}월)</div>
       </div>
       <div class="analytics-mini-item" style="background:rgba(255,255,255,0.12);">
         <div class="val" style="color:#fff;">${formatNumber(Math.round(grandMonthlyEquiv * 12))}</div>
@@ -2175,10 +2544,11 @@ function renderAnalyticsDashboard() {
     <div class="analytics-card-title"><span>📋</span> 팀별 상세 비교표</div>
     <div class="table-scroll">
       <table class="preview-table" style="font-size:12px;">
-        <thead><tr><th>순위</th><th>팀명</th><th>서비스 수</th><th>월 결제</th><th>연 결제</th><th>월 환산 합계</th><th>연간 예상</th><th>비중</th></tr></thead>
+        <thead><tr><th>순위</th><th>팀명</th><th>서비스 수</th><th>월 결제</th><th>연 결제</th><th>월 환산 합계</th><th style="color:#B45309;">누적 (1~${adminMonthsElapsed}월)</th><th>연간 예상</th><th>비중</th></tr></thead>
         <tbody>`;
   teamSorted.forEach((d, i) => {
     const ratio = grandMonthlyEquiv > 0 ? (d.monthlyEquiv / grandMonthlyEquiv * 100).toFixed(1) : 0;
+    const teamCumulative = Math.round(d.monthlyEquiv * adminMonthsElapsed);
     html += `<tr>
       <td><strong>${i + 1}</strong></td>
       <td><strong>${d.name}</strong></td>
@@ -2186,6 +2556,7 @@ function renderAnalyticsDashboard() {
       <td>${formatNumber(d.monthly)}</td>
       <td>${formatNumber(d.yearly)}</td>
       <td style="font-weight:700;color:var(--accent);">${formatNumber(Math.round(d.monthlyEquiv))}</td>
+      <td style="font-weight:700;color:#B45309;">${formatNumber(teamCumulative)}</td>
       <td>${formatNumber(Math.round(d.monthlyEquiv * 12))}</td>
       <td><strong>${ratio}%</strong></td>
     </tr>`;
@@ -2196,6 +2567,7 @@ function renderAnalyticsDashboard() {
     <td>${formatNumber(totalMonthly)}</td>
     <td>${formatNumber(totalYearly)}</td>
     <td style="color:var(--accent);">${formatNumber(Math.round(grandMonthlyEquiv))}</td>
+    <td style="color:#B45309;">${formatNumber(adminCumulativeTotal)}</td>
     <td>${formatNumber(Math.round(grandMonthlyEquiv * 12))}</td>
     <td>100%</td>
   </tr>`;
