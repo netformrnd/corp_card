@@ -689,7 +689,6 @@
             <th style="min-width:80px">이용 플랜</th>
             <th style="min-width:55px">통화</th>
             <th style="min-width:80px">월 금액</th>
-            <th style="min-width:60px">결제주기</th>
             <th style="min-width:70px">정기결제일</th>
             <th style="min-width:80px">사용 부서</th>
             <th style="min-width:110px">사용 계정</th>
@@ -707,7 +706,6 @@
               <td><input type="text" placeholder="플랜명"></td>
               <td><select class="currency-select"><option value="KRW" selected>KRW</option><option value="USD">USD</option></select></td>
               <td><input type="text" class="amt-input" placeholder="금액"></td>
-              <td><select><option>월별</option></select></td>
               <td><input type="text" class="paydate-input" placeholder="일자만 입력 (예: 15)"></td>
               <td><input type="text" placeholder="부서"></td>
               <td><input type="text" placeholder="이메일"></td>
@@ -758,7 +756,7 @@
               <td><input type="text" class="amt-input" placeholder="금액"></td>
               <td><select onchange="calcYearlyPeriod(this.closest('tr'))"><option>연간</option><option>6개월</option><option>3개월</option></select></td>
               <td><input type="text" class="period-input" placeholder="시작일 (예: 2026.03.01)"></td>
-              <td><input type="text" class="renew-input" placeholder="자동생성" readonly style="background:#f8f8f8;color:#888;"></td>
+              <td><input type="text" class="renew-input" placeholder="자동 또는 직접입력" style="color:#555;"></td>
               <td><input type="text" placeholder="부서"></td>
               <td><input type="text" placeholder="이메일"></td>
               <td><input type="text" placeholder="0000"></td>
@@ -1663,7 +1661,6 @@ function addStaffRowWithData(type, data, num) {
       <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
       <td><select class="currency-select"><option value="KRW" ${cur==='KRW'?'selected':''}>KRW</option><option value="USD" ${cur==='USD'?'selected':''}>USD</option></select></td>
       <td><input type="text" class="amt-input" placeholder="금액" value="${formatAmountComma(d.amount||'')}"></td>
-      <td><select><option ${d.cycle==='월별'?'selected':''}>월별</option></select></td>
       <td><input type="text" class="paydate-input" placeholder="일자만 입력 (예: 15)" value="${d.payDate||''}"></td>
       <td><input type="text" placeholder="부서" value="${d.dept||currentTeam||''}"></td>
       <td><input type="text" placeholder="이메일" value="${d.account||''}"></td>
@@ -1685,7 +1682,7 @@ function addStaffRowWithData(type, data, num) {
       <td><input type="text" class="amt-input" placeholder="금액" value="${formatAmountComma(d.amount||'')}"></td>
       <td><select onchange="calcYearlyPeriod(this.closest('tr'))"><option ${d.cycle==='연간'?'selected':''}>연간</option><option ${d.cycle==='6개월'?'selected':''}>6개월</option><option ${d.cycle==='3개월'?'selected':''}>3개월</option></select></td>
       <td><input type="text" class="period-input" placeholder="시작일 (예: 2026.03.01)" value="${d.period||''}"></td>
-      <td><input type="text" class="renew-input" placeholder="자동생성" value="${d.renewDate||''}" readonly style="background:#f8f8f8;color:#888;"></td>
+      <td><input type="text" class="renew-input" placeholder="자동 또는 직접입력" value="${d.renewDate||''}" style="color:#555;"></td>
       <td><input type="text" placeholder="부서" value="${d.dept||currentTeam||''}"></td>
       <td><input type="text" placeholder="이메일" value="${d.account||''}"></td>
       <td><input type="text" placeholder="0000" value="${d.card||''}"></td>
@@ -1892,14 +1889,13 @@ function collectStaffData() {
     const selects = row.querySelectorAll('select');
     const catSel = selects[0];  // 카테고리 select
     const currSel = selects[1]; // 통화 select
-    const cycleSel = selects[2]; // 결제주기 select
     if (inputs[0]?.value.trim()) {
       monthly['m' + mIdx] = {
         category: catSel ? catSel.value : '서비스',
         service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
         purpose: inputs[2].value.trim(), plan: inputs[3].value.trim(),
         currency: currSel ? currSel.value : 'KRW',
-        amount: inputs[4].value.trim(), cycle: cycleSel ? cycleSel.value : '월별',
+        amount: inputs[4].value.trim(), cycle: '월별',
         payDate: inputs[5].value.trim(), dept: inputs[6].value.trim(),
         account: inputs[7].value.trim(), card: inputs[8].value.trim(),
         note: inputs[9].value.trim()
