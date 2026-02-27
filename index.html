@@ -658,7 +658,7 @@
         <div class="table-card">
           <div class="table-card-header"><h3>연 결제 서비스 (예시)</h3><span class="example-badge badge-yearly">연간 결제</span></div>
           <div class="table-scroll">
-            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
             <tbody>
               <tr><td><span class="row-num">1</span></td><td><span class="badge-cycle badge-yearly">서비스</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td>KRW</td><td><strong>129,000</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
               <tr><td><span class="row-num">2</span></td><td><span style="background:#8B5CF6;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">사용 수수료</span></td><td><strong>결제수수료E</strong></td><td>E사</td><td>PG 수수료</td><td>-</td><td>KRW</td><td><strong>240,000</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-03-01~2027-02-28</td><td>2027-03-01</td><td>OO팀</td><td style="font-size:11px">billing@company.com</td><td><span class="card-chip">5678</span></td></tr>
@@ -736,8 +736,8 @@
             <th style="min-width:55px">통화</th>
             <th style="min-width:80px">연 금액</th>
             <th style="min-width:60px">결제주기</th>
-            <th style="min-width:90px">기간</th>
-            <th style="min-width:70px">갱신일</th>
+            <th style="min-width:90px">시작일</th>
+            <th style="min-width:90px">종료일</th>
             <th style="min-width:80px">사용 부서</th>
             <th style="min-width:110px">사용 계정</th>
             <th style="min-width:70px">결제카드<br>(끝4자리)</th>
@@ -755,8 +755,8 @@
               <td><select class="currency-select"><option value="KRW" selected>KRW</option><option value="USD">USD</option></select></td>
               <td><input type="text" class="amt-input" placeholder="금액"></td>
               <td><select onchange="calcYearlyPeriod(this.closest('tr'))"><option>연간</option><option>6개월</option><option>3개월</option></select></td>
-              <td><input type="text" class="period-input" placeholder="시작일 (예: 2026.03.01)"></td>
-              <td><input type="text" class="renew-input" placeholder="자동 또는 직접입력" style="color:#555;"></td>
+              <td><input type="text" class="period-input" placeholder="예: 2026.03.01"></td>
+              <td><input type="text" class="renew-input" placeholder="자동계산 (수정가능)"></td>
               <td><input type="text" placeholder="부서"></td>
               <td><input type="text" placeholder="이메일"></td>
               <td><input type="text" placeholder="0000"></td>
@@ -1681,8 +1681,8 @@ function addStaffRowWithData(type, data, num) {
       <td><select class="currency-select"><option value="KRW" ${cur==='KRW'?'selected':''}>KRW</option><option value="USD" ${cur==='USD'?'selected':''}>USD</option></select></td>
       <td><input type="text" class="amt-input" placeholder="금액" value="${formatAmountComma(d.amount||'')}"></td>
       <td><select onchange="calcYearlyPeriod(this.closest('tr'))"><option ${d.cycle==='연간'?'selected':''}>연간</option><option ${d.cycle==='6개월'?'selected':''}>6개월</option><option ${d.cycle==='3개월'?'selected':''}>3개월</option></select></td>
-      <td><input type="text" class="period-input" placeholder="시작일 (예: 2026.03.01)" value="${d.period||''}"></td>
-      <td><input type="text" class="renew-input" placeholder="자동 또는 직접입력" value="${d.renewDate||''}" style="color:#555;"></td>
+      <td><input type="text" class="period-input" placeholder="예: 2026.03.01" value="${d.period||''}"></td>
+      <td><input type="text" class="renew-input" placeholder="자동계산 (수정가능)" value="${d.renewDate||''}"></td>
       <td><input type="text" placeholder="부서" value="${d.dept||currentTeam||''}"></td>
       <td><input type="text" placeholder="이메일" value="${d.account||''}"></td>
       <td><input type="text" placeholder="0000" value="${d.card||''}"></td>
@@ -1735,7 +1735,7 @@ function calcYearlyPeriod(row) {
   if (!periodInput || !cycleSelect) return;
 
   let val = periodInput.value.trim();
-  // 이미 계산된 "시작 ~ 종료" 형태면 시작일만 추출
+  // 이미 "시작 ~ 종료" 형태면 시작일만 추출 (하위 호환)
   if (val.includes('~')) val = val.split('~')[0].trim();
 
   // 날짜 파싱 (YYYY.MM.DD / YYYY-MM-DD / YYYY/MM/DD / YYYYMMDD)
@@ -1748,6 +1748,11 @@ function calcYearlyPeriod(row) {
   }
   if (!startDate || isNaN(startDate.getTime())) return;
 
+  const fmt = d => d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+
+  // 시작일 필드는 시작일만 표시 (종료일 합치지 않음)
+  periodInput.value = fmt(startDate);
+
   // 결제주기에 따른 개월 수
   const cycle = cycleSelect.value;
   let months = 12;
@@ -1759,23 +1764,22 @@ function calcYearlyPeriod(row) {
   endDate.setMonth(endDate.getMonth() + months);
   endDate.setDate(endDate.getDate() - 1);
 
-  const fmt = d => d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
-
-  periodInput.value = fmt(startDate) + ' ~ ' + fmt(endDate);
+  // 종료일 필드에 자동 입력 (수기 편집 가능)
   if (renewInput) renewInput.value = fmt(endDate);
 }
 
 (function() {
   const yBody = document.getElementById('staffYearlyBody');
 
-  // 포커스 시: "2026.03.01 ~ 2027.02.28" → "2026.03.01" (편집 편의)
+  // 포커스 시: 하위호환 - 혹시 "시작 ~ 종료" 형태가 남아있으면 시작일만 추출
   yBody.addEventListener('focus', function(e) {
     if (!e.target.classList.contains('period-input')) return;
     const val = e.target.value.trim();
-    if (val.includes('~')) { e.target.value = val.split('~')[0].trim(); e.target.select(); }
+    if (val.includes('~')) { e.target.value = val.split('~')[0].trim(); }
+    e.target.select();
   }, true);
 
-  // 포커스 아웃 시: 시작일 입력 → 자동 기간 계산
+  // 시작일 포커스 아웃 시: 종료일 자동 계산
   yBody.addEventListener('blur', function(e) {
     if (!e.target.classList.contains('period-input')) return;
     calcYearlyPeriod(e.target.closest('tr'));
@@ -2019,10 +2023,11 @@ function renderStaffPreview() {
     html += `<div class="table-card"><div class="table-card-header"><h3>연 결제 서비스</h3><span class="example-badge badge-yearly">${yArr.length}건</span></div>
       <div class="table-scroll"><table class="preview-table"><thead><tr>
         <th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th>
-        <th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th>
+        <th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th>
       </tr></thead><tbody>`;
     yArr.forEach((r, i) => {
-      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-yearly">${r.cycle}</span></td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
+      const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
+      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-yearly">${r.cycle}</span></td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
     });
     html += `</tbody></table></div></div>`;
   }
@@ -2124,7 +2129,7 @@ function renderAdminTeamDetail() {
 
   if (yArr.length > 0) {
     html += `<div class="table-card"><div class="table-card-header"><h3>연 결제 — ${adminCurrentTeam}</h3><span class="example-badge badge-yearly">${yArr.length}건</span></div>
-      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
     yArr.forEach((r, i) => {
       const cur = r.currency || 'KRW';
       const amt = parseAmount(r.amount);
@@ -2134,7 +2139,8 @@ function renderAdminTeamDetail() {
       const amtDisplay = cur === 'USD'
         ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
         : `${formatNumber(amt)}`;
-      html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
+      html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
     });
     html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${hasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
     html += `</tbody></table></div></div>`;
@@ -2220,7 +2226,7 @@ function renderAdminAllDetail() {
 
     if (yArr.length > 0) {
       html += `<div style="padding:0 16px;"><div style="font-size:13px;font-weight:600;color:#8B5CF6;padding:12px 0 6px;display:flex;align-items:center;gap:6px;">연 결제 서비스 <span class="example-badge badge-yearly">${yArr.length}건</span></div>
-        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>갱신일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
       yArr.forEach((r, i) => {
         const cur = r.currency || 'KRW';
         const amt = parseAmount(r.amount);
@@ -2230,7 +2236,8 @@ function renderAdminAllDetail() {
         const amtDisplay = cur === 'USD'
           ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
           : `${formatNumber(amt)}`;
-        html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.period}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+        const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
+        html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
       });
       html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${teamHasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
       html += `</tbody></table></div></div>`;
@@ -2773,7 +2780,7 @@ function renderStaffApprovalForm() {
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">연 금액</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">결제주기</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">기간</th>
-        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">갱신일</th>
+        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">종료일</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카드(끝4자리)</th>
       </tr></thead><tbody>`;
     yearlyItems.forEach((r, i) => {
@@ -2787,7 +2794,7 @@ function renderStaffApprovalForm() {
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;">${r.purpose||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:right;padding-right:10px;font-weight:700;">${amtDisplay}${cur==='USD' ? '<br><span style="font-size:10px;color:#888;">(≈'+formatNumber(Math.round(r.amountKrw))+'원)</span>' : ''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.cycle||''}</td>
-        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.period||''}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period||'')}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.renewDate||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.card||''}</td>
       </tr>`;
@@ -2958,7 +2965,7 @@ function renderApprovalForTeam(teamName) {
           <thead><tr><th>번호</th><th>서비스명</th><th>공급업체</th><th>합계</th><th>결제주기</th><th>결제일/기간</th><th>결제카드</th><th>지출분류</th><th>사용내역</th></tr></thead>
           <tbody>`;
   allItems.forEach((it, idx) => {
-    const dp = it.type === 'monthly' ? (it.payDate||'') : (it.period||'');
+    const dp = it.type === 'monthly' ? (it.payDate||'') : (it.period && it.renewDate ? it.period + ' ~ ' + it.renewDate : (it.period||''));
     const cur = it.currency || 'KRW';
     const amtDisplay = cur === 'USD'
       ? `USD ${formatNumber(it.amountNum)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(it.amountKrw))}원)</span>`
@@ -3018,7 +3025,7 @@ function buildCSVForTeam(teamName) {
 
   const yArr = data.yearly ? Object.values(data.yearly) : [];
   if (yArr.length > 0) {
-    csv += `"[연 결제 서비스]"\n"No.","카테고리","서비스명","공급업체","구매 목적","이용 플랜","통화","연 금액","결제주기","기간","갱신일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    csv += `"[연 결제 서비스]"\n"No.","카테고리","서비스명","공급업체","구매 목적","이용 플랜","통화","연 금액","결제주기","시작일","종료일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
     yArr.forEach((r, i) => {
       csv += `"${i+1}","${csvSafe(r.category||'서비스')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
     });
