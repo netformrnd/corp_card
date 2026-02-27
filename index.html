@@ -1731,7 +1731,8 @@ function calcYearlyPeriod(row) {
   if (!row) return;
   const periodInput = row.querySelector('.period-input');
   const renewInput  = row.querySelector('.renew-input');
-  const cycleSelect = row.querySelector('select');
+  const selects = row.querySelectorAll('select');
+  const cycleSelect = selects[2]; // [0]=카테고리, [1]=통화, [2]=결제주기
   if (!periodInput || !cycleSelect) return;
 
   let val = periodInput.value.trim();
