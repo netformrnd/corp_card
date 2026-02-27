@@ -1785,6 +1785,14 @@ function calcYearlyPeriod(row) {
     if (!e.target.classList.contains('period-input')) return;
     calcYearlyPeriod(e.target.closest('tr'));
   }, true);
+
+  // 시작일 입력 후 엔터 시: 즉시 계산 적용
+  yBody.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter' || !e.target.classList.contains('period-input')) return;
+    e.preventDefault();
+    calcYearlyPeriod(e.target.closest('tr'));
+    e.target.blur();
+  }, true);
 })();
 
 // ══════════════════════════════════
