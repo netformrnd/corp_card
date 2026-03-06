@@ -387,6 +387,14 @@
   .example-toggle-content { display: none; padding: 16px 20px; border-top: 1px solid #BFDBFE; background: #FAFBFE; }
   .example-toggle-content.open { display: block; animation: fadeIn 0.3s ease; }
 
+  /* ── Staff Guide Banner ── */
+  .staff-guide-banner { background: linear-gradient(135deg, #EFF6FF, #F0F9FF); border: 1px solid #93C5FD; border-left: 4px solid #3B82F6; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; }
+  .staff-guide-banner .guide-title { font-size: 14px; font-weight: 700; color: #1D4ED8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .staff-guide-banner .guide-steps { display: flex; flex-direction: column; gap: 4px; }
+  .staff-guide-banner .guide-step { font-size: 13px; color: #334155; line-height: 1.6; }
+  .staff-guide-banner .guide-step strong { color: #1E40AF; }
+  .staff-guide-banner .guide-note { font-size: 12px; color: #64748B; margin-top: 8px; padding-top: 8px; border-top: 1px solid #BFDBFE; }
+
   /* ── Step Indicator ── */
   .step-indicator { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 20px; padding: 16px 20px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
   .step-item { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 16px; border-radius: var(--radius-sm); transition: all 0.2s; }
@@ -551,6 +559,16 @@
 <!-- ══════════════════════════ -->
 <div id="mode-staff" class="section">
 
+  <!-- Staff Guide Banner -->
+  <div class="staff-guide-banner">
+    <div class="guide-title">💡 직원 모드 안내</div>
+    <div class="guide-steps">
+      <div class="guide-step">이 화면에서 우리 팀의 <strong>법인카드 고정 지출 내역</strong>을 직접 작성·저장할 수 있습니다.</div>
+      <div class="guide-step">아래 <strong>팀 선택 → 내역 입력 → 저장 → 품의서 변환</strong> 순서로 진행해 주세요.</div>
+    </div>
+    <div class="guide-note">저장 시 경영관리팀에 자동 공유되며, 아래 <strong>「작성 예시 보기」</strong>를 누르면 입력 샘플을 확인할 수 있습니다.<br>팀 선택 후 나타나는 <strong>「📊 우리팀 비용분석」</strong> 버튼을 누르면 저장된 내역 기반의 월별 지출 현황을 확인할 수 있습니다.</div>
+  </div>
+
   <!-- Team Selector -->
   <div class="team-selector">
     <div class="team-selector-title">
@@ -647,10 +665,10 @@
         <div class="table-card" style="margin-bottom:12px;">
           <div class="table-card-header"><h3>월 결제 서비스 (예시)</h3><span class="example-badge badge-monthly">월별 결제</span></div>
           <div class="table-scroll">
-            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>이용 플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
             <tbody>
-              <tr><td><span class="row-num">1</span></td><td><span class="badge-cycle badge-monthly">AI</span></td><td><strong>SaaS 서비스A</strong></td><td>A사</td><td>업무 생산성 향상</td><td>Standard</td><td>USD</td><td><strong>20</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 15일</td><td>OO팀</td><td style="font-size:11px">example@company.com</td><td><span class="card-chip">0000</span></td></tr>
-              <tr><td><span class="row-num">2</span></td><td><span class="badge-cycle badge-yearly">서비스</span></td><td><strong>클라우드 서비스B</strong></td><td>B사</td><td>데이터 분석</td><td>Pro</td><td>KRW</td><td><strong>55,000</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 1일</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">1234</span></td></tr>
+              <tr><td><span class="row-num">1</span></td><td><span style="background:#10B981;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">AI구독료</span></td><td><strong>SaaS 서비스A</strong></td><td>A사</td><td>업무 생산성 향상</td><td>Standard</td><td>USD</td><td><strong>20</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 15일</td><td>OO팀</td><td style="font-size:11px">example@company.com</td><td><span class="card-chip">0000</span></td></tr>
+              <tr><td><span class="row-num">2</span></td><td><span style="background:#6B7280;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">기타</span></td><td><strong>클라우드 서비스B</strong></td><td>B사</td><td>데이터 분석</td><td>Pro</td><td>KRW</td><td><strong>55,000</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 1일</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">1234</span></td></tr>
               <tr><td><span class="row-num">3</span></td><td><span style="background:#F59E0B;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">광고</span></td><td><strong>검색광고D</strong></td><td>D사</td><td>마케팅 광고 집행</td><td>Basic</td><td>KRW</td><td><strong>300,000</strong></td><td><span class="badge-cycle badge-monthly">월별</span></td><td>매월 5일</td><td>OO팀</td><td style="font-size:11px">ad@company.com</td><td><span class="card-chip">1234</span></td></tr>
             </tbody></table>
           </div>
@@ -658,9 +676,9 @@
         <div class="table-card">
           <div class="table-card-header"><h3>연 결제 서비스 (예시)</h3><span class="example-badge badge-yearly">연간 결제</span></div>
           <div class="table-scroll">
-            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
+            <table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>이용 플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th></tr></thead>
             <tbody>
-              <tr><td><span class="row-num">1</span></td><td><span class="badge-cycle badge-yearly">서비스</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td>KRW</td><td><strong>129,000</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
+              <tr><td><span class="row-num">1</span></td><td><span style="background:#6B7280;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">기타</span></td><td><strong>디자인 툴C</strong></td><td>C사</td><td>마케팅 자료 제작</td><td>Business</td><td>KRW</td><td><strong>129,000</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-01-01~2026-12-31</td><td>2027-01-01</td><td>OO팀</td><td style="font-size:11px">team@company.com</td><td><span class="card-chip">5678</span></td></tr>
               <tr><td><span class="row-num">2</span></td><td><span style="background:#8B5CF6;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">사용 수수료</span></td><td><strong>결제수수료E</strong></td><td>E사</td><td>PG 수수료</td><td>-</td><td>KRW</td><td><strong>240,000</strong></td><td><span class="badge-cycle badge-yearly">연간</span></td><td>2026-03-01~2027-02-28</td><td>2027-03-01</td><td>OO팀</td><td style="font-size:11px">billing@company.com</td><td><span class="card-chip">5678</span></td></tr>
             </tbody></table>
           </div>
@@ -684,8 +702,8 @@
             <th style="width:36px">No.</th>
             <th style="min-width:75px">카테고리</th>
             <th style="min-width:80px">서비스명</th>
-            <th style="min-width:80px">공급업체</th>
-            <th style="min-width:100px">구매 목적</th>
+            <th style="min-width:80px">업체명</th>
+            <th style="min-width:100px">결재목적</th>
             <th style="min-width:80px">이용 플랜</th>
             <th style="min-width:55px">통화</th>
             <th style="min-width:80px">월 금액</th>
@@ -699,10 +717,10 @@
           <tbody id="staffMonthlyBody">
             <tr>
               <td><span class="row-num">1</span></td>
-              <td><select class="category-select"><option value="서비스">서비스</option><option value="사용 수수료">사용 수수료</option><option value="AI">AI</option><option value="광고">광고</option></select></td>
+              <td><select class="category-select"><option value="사용 수수료">사용 수수료</option><option value="AI구독료">AI구독료</option><option value="광고">광고</option><option value="기타">기타</option></select></td>
               <td><input type="text" placeholder="서비스명"></td>
-              <td><input type="text" placeholder="공급업체"></td>
-              <td><input type="text" placeholder="구매 목적"></td>
+              <td><input type="text" placeholder="업체명"></td>
+              <td><input type="text" placeholder="결재목적"></td>
               <td><input type="text" placeholder="플랜명"></td>
               <td><select class="currency-select"><option value="KRW" selected>KRW</option><option value="USD">USD</option></select></td>
               <td><input type="text" class="amt-input" placeholder="금액"></td>
@@ -730,8 +748,8 @@
             <th style="width:36px">No.</th>
             <th style="min-width:75px">카테고리</th>
             <th style="min-width:80px">서비스명</th>
-            <th style="min-width:80px">공급업체</th>
-            <th style="min-width:100px">구매 목적</th>
+            <th style="min-width:80px">업체명</th>
+            <th style="min-width:100px">결재목적</th>
             <th style="min-width:80px">이용 플랜</th>
             <th style="min-width:55px">통화</th>
             <th style="min-width:80px">연 금액</th>
@@ -747,10 +765,10 @@
           <tbody id="staffYearlyBody">
             <tr>
               <td><span class="row-num">1</span></td>
-              <td><select class="category-select"><option value="서비스">서비스</option><option value="사용 수수료">사용 수수료</option><option value="AI">AI</option><option value="광고">광고</option></select></td>
+              <td><select class="category-select"><option value="사용 수수료">사용 수수료</option><option value="AI구독료">AI구독료</option><option value="광고">광고</option><option value="기타">기타</option></select></td>
               <td><input type="text" placeholder="서비스명"></td>
-              <td><input type="text" placeholder="공급업체"></td>
-              <td><input type="text" placeholder="구매 목적"></td>
+              <td><input type="text" placeholder="업체명"></td>
+              <td><input type="text" placeholder="결재목적"></td>
               <td><input type="text" placeholder="플랜명"></td>
               <td><select class="currency-select"><option value="KRW" selected>KRW</option><option value="USD">USD</option></select></td>
               <td><input type="text" class="amt-input" placeholder="금액"></td>
@@ -974,6 +992,21 @@ const DB_ROOT = '/corp_card_fixed'; // 법인카드 고정지출 전용 경로
 // ══════════════════════════════════
 let currentTeam = null;
 let allTeamsData = {}; // { teamName: { meta, monthly, yearly, submittedAt } }
+
+// 이전 카테고리명 → 새 카테고리명 자동 변환
+function migrateCategoryNames(data) {
+  const catMap = { '서비스': '기타', 'AI': 'AI구독료' };
+  Object.values(data).forEach(team => {
+    ['monthly', 'yearly'].forEach(type => {
+      if (!team[type]) return;
+      Object.values(team[type]).forEach(row => {
+        if (row.category && catMap[row.category]) {
+          row.category = catMap[row.category];
+        }
+      });
+    });
+  });
+}
 let isSaving = false;
 let adminUnlocked = false; // 관리자 인증 상태
 let adminPw = 'netform2026'; // 기본 비밀번호 (Firebase에서 덮어씀)
@@ -1163,6 +1196,7 @@ function initFirebase() {
     if (isSaving) return;
     const data = snapshot.val();
     allTeamsData = data || {};
+    migrateCategoryNames(allTeamsData);
     renderTeamTabs();
     renderTeamStatusForAdmin();
     // If on staff mode and team selected, check if data changed
@@ -1292,7 +1326,7 @@ function renderStaffTeamAnalytics() {
     if (cur === 'USD') hasUsd = true;
     totalMonthly += amt;
     totalMonthlyEquiv += amt;
-    const cat = r.category || '서비스';
+    const cat = r.category || '기타';
     categoryMap[cat] = (categoryMap[cat] || 0) + amt;
     serviceList.push({
       name: r.service || '(미입력)',
@@ -1319,7 +1353,7 @@ function renderStaffTeamAnalytics() {
     else if (cycle === '3개월') div = 3;
     const monthEquiv = amt / div;
     totalMonthlyEquiv += monthEquiv;
-    const cat = r.category || '서비스';
+    const cat = r.category || '기타';
     categoryMap[cat] = (categoryMap[cat] || 0) + monthEquiv;
     serviceList.push({
       name: r.service || '(미입력)',
@@ -1352,8 +1386,8 @@ function renderStaffTeamAnalytics() {
   // 카테고리 정렬
   const catSorted = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
   const catTotal = catSorted.reduce((s, c) => s + c[1], 0);
-  const catIcons = { '서비스': '🖥️', '사용 수수료': '💳', 'AI': '🤖', '광고': '📢' };
-  const catColors = { '서비스': '#3B82F6', '사용 수수료': '#8B5CF6', 'AI': '#10B981', '광고': '#F59E0B' };
+  const catIcons = { '사용 수수료': '💳', 'AI구독료': '🤖', '광고': '📢', '기타': '📌' };
+  const catColors = { '사용 수수료': '#8B5CF6', 'AI구독료': '#10B981', '광고': '#F59E0B', '기타': '#6B7280' };
   const barColors = ['#3B82F6','#8B5CF6','#F59E0B','#10B981','#EF4444','#EC4899','#06B6D4','#84CC16'];
 
   let html = '';
@@ -1477,6 +1511,48 @@ function renderStaffTeamAnalytics() {
   </div>`;
 
   html += `</div>`; // staff-analytics-grid 닫기
+
+  // ── 2.5) 월별 지출 내역 ──
+  {
+    const monthlyAmt = Math.round(totalMonthlyEquiv);
+    let rows = '';
+    let cumul = 0;
+    for (let m = 1; m <= 12; m++) {
+      const isCur = m === monthsElapsed;
+      const isPast = m < monthsElapsed;
+      cumul += monthlyAmt;
+      if (isPast || isCur) {
+        const rowBg = isCur ? 'background:#FFFBEB;' : (m % 2 === 0 ? 'background:#FAFBFE;' : '');
+        const mLabel = isCur ? `<strong style="color:#B45309;">${m}월 ◀</strong>` : `${m}월`;
+        rows += `<tr style="${rowBg}">
+          <td style="padding:6px 10px;font-size:12px;text-align:center;border-bottom:1px solid #F1F5F9;">${mLabel}</td>
+          <td style="padding:6px 10px;font-size:12px;text-align:right;font-weight:600;color:var(--primary);border-bottom:1px solid #F1F5F9;font-variant-numeric:tabular-nums;">₩${formatNumber(monthlyAmt)}</td>
+          <td style="padding:6px 10px;font-size:12px;text-align:right;color:var(--text-secondary);border-bottom:1px solid #F1F5F9;font-variant-numeric:tabular-nums;">₩${formatNumber(cumul)}</td>
+        </tr>`;
+      }
+    }
+    // 예정 월 요약 (남은 월 한줄)
+    const remaining = 12 - monthsElapsed;
+    if (remaining > 0) {
+      rows += `<tr style="background:#F8FAFC;">
+        <td style="padding:6px 10px;font-size:11px;text-align:center;color:#94A3B8;">${monthsElapsed+1}~12월<br><span style="font-size:10px;color:#B0B8C4;">(예상)</span></td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#94A3B8;">₩${formatNumber(monthlyAmt)} × ${remaining}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:right;color:#94A3B8;">₩${formatNumber(monthlyAmt * 12)}</td>
+      </tr>`;
+    }
+
+    html += `<div class="sa-card" style="margin-bottom:16px;padding:14px 16px 12px;">
+      <div class="sa-card-title" style="margin-bottom:8px;"><span>📊</span> 월별 지출 내역</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="border-bottom:2px solid var(--border);">
+          <th style="padding:5px 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-align:center;width:60px;">월</th>
+          <th style="padding:5px 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-align:right;">지출액</th>
+          <th style="padding:5px 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-align:right;width:110px;">누적</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
 
   // ── 3) 서비스별 지출 상세 (전체) ──
   html += `<div class="sa-card" style="margin-bottom:16px;">
@@ -1651,13 +1727,13 @@ function addStaffRowWithData(type, data, num) {
 
   if (type === 'monthly') {
     const cur = d.currency || 'KRW';
-    const cat = d.category || '서비스';
+    const cat = d.category || '기타';
     tbody.insertAdjacentHTML('beforeend', `<tr>
       <td><span class="row-num">${num}</span></td>
-      <td><select class="category-select"><option value="서비스" ${cat==='서비스'?'selected':''}>서비스</option><option value="사용 수수료" ${cat==='사용 수수료'?'selected':''}>사용 수수료</option><option value="AI" ${cat==='AI'?'selected':''}>AI</option><option value="광고" ${cat==='광고'?'selected':''}>광고</option></select></td>
+      <td><select class="category-select"><option value="사용 수수료" ${cat==='사용 수수료'?'selected':''}>사용 수수료</option><option value="AI구독료" ${cat==='AI구독료'?'selected':''}>AI구독료</option><option value="광고" ${cat==='광고'?'selected':''}>광고</option><option value="기타" ${cat==='기타'?'selected':''}>기타</option></select></td>
       <td><input type="text" placeholder="서비스명" value="${d.service||''}"></td>
-      <td><input type="text" placeholder="공급업체" value="${d.vendor||''}"></td>
-      <td><input type="text" placeholder="구매 목적" value="${d.purpose||''}"></td>
+      <td><input type="text" placeholder="업체명" value="${d.vendor||''}"></td>
+      <td><input type="text" placeholder="결재목적" value="${d.purpose||''}"></td>
       <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
       <td><select class="currency-select"><option value="KRW" ${cur==='KRW'?'selected':''}>KRW</option><option value="USD" ${cur==='USD'?'selected':''}>USD</option></select></td>
       <td><input type="text" class="amt-input" placeholder="금액" value="${formatAmountComma(d.amount||'')}"></td>
@@ -1670,13 +1746,13 @@ function addStaffRowWithData(type, data, num) {
     </tr>`);
   } else {
     const cur = d.currency || 'KRW';
-    const cat = d.category || '서비스';
+    const cat = d.category || '기타';
     tbody.insertAdjacentHTML('beforeend', `<tr>
       <td><span class="row-num">${num}</span></td>
-      <td><select class="category-select"><option value="서비스" ${cat==='서비스'?'selected':''}>서비스</option><option value="사용 수수료" ${cat==='사용 수수료'?'selected':''}>사용 수수료</option><option value="AI" ${cat==='AI'?'selected':''}>AI</option><option value="광고" ${cat==='광고'?'selected':''}>광고</option></select></td>
+      <td><select class="category-select"><option value="사용 수수료" ${cat==='사용 수수료'?'selected':''}>사용 수수료</option><option value="AI구독료" ${cat==='AI구독료'?'selected':''}>AI구독료</option><option value="광고" ${cat==='광고'?'selected':''}>광고</option><option value="기타" ${cat==='기타'?'selected':''}>기타</option></select></td>
       <td><input type="text" placeholder="서비스명" value="${d.service||''}"></td>
-      <td><input type="text" placeholder="공급업체" value="${d.vendor||''}"></td>
-      <td><input type="text" placeholder="구매 목적" value="${d.purpose||''}"></td>
+      <td><input type="text" placeholder="업체명" value="${d.vendor||''}"></td>
+      <td><input type="text" placeholder="결재목적" value="${d.purpose||''}"></td>
       <td><input type="text" placeholder="플랜명" value="${d.plan||''}"></td>
       <td><select class="currency-select"><option value="KRW" ${cur==='KRW'?'selected':''}>KRW</option><option value="USD" ${cur==='USD'?'selected':''}>USD</option></select></td>
       <td><input type="text" class="amt-input" placeholder="금액" value="${formatAmountComma(d.amount||'')}"></td>
@@ -1904,7 +1980,7 @@ function collectStaffData() {
     const currSel = selects[1]; // 통화 select
     if (inputs[0]?.value.trim()) {
       monthly['m' + mIdx] = {
-        category: catSel ? catSel.value : '서비스',
+        category: catSel ? catSel.value : '기타',
         service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
         purpose: inputs[2].value.trim(), plan: inputs[3].value.trim(),
         currency: currSel ? currSel.value : 'KRW',
@@ -1927,7 +2003,7 @@ function collectStaffData() {
     const cycleSel = selects[2]; // 결제주기 select
     if (inputs[0]?.value.trim()) {
       yearly['y' + yIdx] = {
-        category: catSel ? catSel.value : '서비스',
+        category: catSel ? catSel.value : '기타',
         service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
         purpose: inputs[2].value.trim(), plan: inputs[3].value.trim(),
         currency: currSel ? currSel.value : 'KRW',
@@ -2019,7 +2095,7 @@ function renderStaffPreview() {
   if (mArr.length > 0) {
     html += `<div class="table-card"><div class="table-card-header"><h3>월 결제 서비스</h3><span class="example-badge badge-monthly">${mArr.length}건</span></div>
       <div class="table-scroll"><table class="preview-table"><thead><tr>
-        <th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th>
+        <th>No.</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>이용 플랜</th>
         <th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th>
       </tr></thead><tbody>`;
     mArr.forEach((r, i) => {
@@ -2031,7 +2107,7 @@ function renderStaffPreview() {
   if (yArr.length > 0) {
     html += `<div class="table-card"><div class="table-card-header"><h3>연 결제 서비스</h3><span class="example-badge badge-yearly">${yArr.length}건</span></div>
       <div class="table-scroll"><table class="preview-table"><thead><tr>
-        <th>No.</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>이용 플랜</th>
+        <th>No.</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>이용 플랜</th>
         <th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th>
       </tr></thead><tbody>`;
     yArr.forEach((r, i) => {
@@ -2120,7 +2196,7 @@ function renderAdminTeamDetail() {
 
   if (mArr.length > 0) {
     html += `<div class="table-card"><div class="table-card-header"><h3>월 결제 — ${adminCurrentTeam}</h3><span class="example-badge badge-monthly">${mArr.length}건</span></div>
-      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
     mArr.forEach((r, i) => {
       const cur = r.currency || 'KRW';
       const amt = parseAmount(r.amount);
@@ -2130,7 +2206,7 @@ function renderAdminTeamDetail() {
       const amtDisplay = cur === 'USD'
         ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
         : `${formatNumber(amt)}`;
-      html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
     });
     html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="7" style="text-align:center;">월 결제 소계${hasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamMonthlyTotal))}원</td><td colspan="6"></td></tr>`;
     html += `</tbody></table></div></div>`;
@@ -2138,7 +2214,7 @@ function renderAdminTeamDetail() {
 
   if (yArr.length > 0) {
     html += `<div class="table-card"><div class="table-card-header"><h3>연 결제 — ${adminCurrentTeam}</h3><span class="example-badge badge-yearly">${yArr.length}건</span></div>
-      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+      <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
     yArr.forEach((r, i) => {
       const cur = r.currency || 'KRW';
       const amt = parseAmount(r.amount);
@@ -2149,7 +2225,7 @@ function renderAdminTeamDetail() {
         ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
         : `${formatNumber(amt)}`;
       const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
-      html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
     });
     html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${hasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
     html += `</tbody></table></div></div>`;
@@ -2217,7 +2293,7 @@ function renderAdminAllDetail() {
 
     if (mArr.length > 0) {
       html += `<div style="padding:0 16px;"><div style="font-size:13px;font-weight:600;color:var(--accent);padding:12px 0 6px;display:flex;align-items:center;gap:6px;">월 결제 서비스 <span class="example-badge badge-monthly">${mArr.length}건</span></div>
-        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>플랜</th><th>통화</th><th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
       mArr.forEach((r, i) => {
         const cur = r.currency || 'KRW';
         const amt = parseAmount(r.amount);
@@ -2227,7 +2303,7 @@ function renderAdminAllDetail() {
         const amtDisplay = cur === 'USD'
           ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
           : `${formatNumber(amt)}`;
-        html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+        html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
       });
       html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="7" style="text-align:center;">월 결제 소계${teamHasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamMonthlyTotal))}원</td><td colspan="6"></td></tr>`;
       html += `</tbody></table></div></div>`;
@@ -2235,7 +2311,7 @@ function renderAdminAllDetail() {
 
     if (yArr.length > 0) {
       html += `<div style="padding:0 16px;"><div style="font-size:13px;font-weight:600;color:#8B5CF6;padding:12px 0 6px;display:flex;align-items:center;gap:6px;">연 결제 서비스 <span class="example-badge badge-yearly">${yArr.length}건</span></div>
-        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>공급업체</th><th>구매 목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
+        <div class="table-scroll"><table class="preview-table"><thead><tr><th>No.</th><th>카테고리</th><th>서비스명</th><th>업체명</th><th>결재목적</th><th>플랜</th><th>통화</th><th>연 금액</th><th>결제주기</th><th>기간</th><th>종료일</th><th>부서</th><th>계정</th><th>카드</th><th>비고</th></tr></thead><tbody>`;
       yArr.forEach((r, i) => {
         const cur = r.currency || 'KRW';
         const amt = parseAmount(r.amount);
@@ -2246,7 +2322,7 @@ function renderAdminAllDetail() {
           ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
           : `${formatNumber(amt)}`;
         const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
-        html += `<tr><td>${i+1}</td><td>${r.category||'서비스'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+        html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
       });
       html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${teamHasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
       html += `</tbody></table></div></div>`;
@@ -2369,7 +2445,7 @@ function renderAnalyticsDashboard() {
       const a = cur === 'USD' ? rawAmt * rate : rawAmt;
       if (cur === 'USD') analyticsHasUsd = true;
       tm += a;
-      const catName = r.category || '서비스';
+      const catName = r.category || '기타';
       categoryMap[catName] = (categoryMap[catName] || 0) + a;
       const cKey = r.card ? `끝자리 ${r.card}` : '미입력';
       cardMap[cKey] = (cardMap[cKey] || 0) + a;
@@ -2385,7 +2461,7 @@ function renderAnalyticsDashboard() {
       if (cycle === '6개월') div = 6;
       else if (cycle === '3개월') div = 3;
       yMonthly += a / div;
-      const catName = r.category || '서비스';
+      const catName = r.category || '기타';
       categoryMap[catName] = (categoryMap[catName] || 0) + (a / div);
       const cKey = r.card ? `끝자리 ${r.card}` : '미입력';
       cardMap[cKey] = (cardMap[cKey] || 0) + (a / div);
@@ -2480,8 +2556,8 @@ function renderAnalyticsDashboard() {
   html += `</div>`;
 
   // 카테고리별 비용 비교
-  const catIcons = { '서비스': '🖥️', '사용 수수료': '💳', 'AI': '🤖', '광고': '📢' };
-  const catColors = { '서비스': '#3B82F6', '사용 수수료': '#8B5CF6', 'AI': '#10B981', '광고': '#F59E0B' };
+  const catIcons = { '사용 수수료': '💳', 'AI구독료': '🤖', '광고': '📢', '기타': '📌' };
+  const catColors = { '사용 수수료': '#8B5CF6', 'AI구독료': '#10B981', '광고': '#F59E0B', '기타': '#6B7280' };
   html += `<div class="analytics-card">
     <div class="analytics-card-title"><span>📂</span> 카테고리별 비용 비교 (월 환산)</div>`;
   catSorted.forEach((s, i) => {
@@ -2749,8 +2825,8 @@ function renderStaffApprovalForm() {
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">No</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카테고리</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">서비스명</th>
-        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">공급업체</th>
-        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">구매 목적</th>
+        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">업체명</th>
+        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">결재목적</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">월 금액</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">정기결제일</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카드(끝4자리)</th>
@@ -2760,7 +2836,7 @@ function renderStaffApprovalForm() {
       const amtDisplay = cur === 'USD' ? `USD ${r.amount||''}` : (r.amount||'');
       bodyHtml += `<tr>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${i+1}</td>
-        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'서비스'}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'기타'}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.vendor||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;">${r.purpose||''}</td>
@@ -2784,8 +2860,8 @@ function renderStaffApprovalForm() {
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">No</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">카테고리</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">서비스명</th>
-        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">공급업체</th>
-        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">구매 목적</th>
+        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">업체명</th>
+        <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">결재목적</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">연 금액</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">결제주기</th>
         <th style="background:#f5f5f5;border:1px solid #aaa;padding:7px 8px;font-weight:600;text-align:center;font-size:11px;">기간</th>
@@ -2797,7 +2873,7 @@ function renderStaffApprovalForm() {
       const amtDisplay = cur === 'USD' ? `USD ${r.amount||''}` : (r.amount||'');
       bodyHtml += `<tr>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${i+1}</td>
-        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'서비스'}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'기타'}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.vendor||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;">${r.purpose||''}</td>
@@ -2971,7 +3047,7 @@ function renderApprovalForTeam(teamName) {
       </div>
       <div style="padding:16px;">
         <table class="usage-list-table" id="usageTable_${safeTeam}">
-          <thead><tr><th>번호</th><th>서비스명</th><th>공급업체</th><th>합계</th><th>결제주기</th><th>결제일/기간</th><th>결제카드</th><th>지출분류</th><th>사용내역</th></tr></thead>
+          <thead><tr><th>번호</th><th>서비스명</th><th>업체명</th><th>합계</th><th>결제주기</th><th>결제일/기간</th><th>결제카드</th><th>지출분류</th><th>사용내역</th></tr></thead>
           <tbody>`;
   allItems.forEach((it, idx) => {
     const dp = it.type === 'monthly' ? (it.payDate||'') : (it.period && it.renewDate ? it.period + ' ~ ' + it.renewDate : (it.period||''));
@@ -3025,18 +3101,18 @@ function buildCSVForTeam(teamName) {
 
   const mArr = data.monthly ? Object.values(data.monthly) : [];
   if (mArr.length > 0) {
-    csv += `"[월 결제 서비스]"\n"No.","카테고리","서비스명","공급업체","구매 목적","이용 플랜","통화","월 금액","결제주기","정기결제일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    csv += `"[월 결제 서비스]"\n"No.","카테고리","서비스명","업체명","결재목적","이용 플랜","통화","월 금액","결제주기","정기결제일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
     mArr.forEach((r, i) => {
-      csv += `"${i+1}","${csvSafe(r.category||'서비스')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.payDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+      csv += `"${i+1}","${csvSafe(r.category||'기타')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.payDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
     });
     csv += '\n';
   }
 
   const yArr = data.yearly ? Object.values(data.yearly) : [];
   if (yArr.length > 0) {
-    csv += `"[연 결제 서비스]"\n"No.","카테고리","서비스명","공급업체","구매 목적","이용 플랜","통화","연 금액","결제주기","시작일","종료일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    csv += `"[연 결제 서비스]"\n"No.","카테고리","서비스명","업체명","결재목적","이용 플랜","통화","연 금액","결제주기","시작일","종료일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
     yArr.forEach((r, i) => {
-      csv += `"${i+1}","${csvSafe(r.category||'서비스')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+      csv += `"${i+1}","${csvSafe(r.category||'기타')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
     });
   }
 
