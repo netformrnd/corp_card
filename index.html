@@ -924,6 +924,23 @@
       <div style="font-size:15px;font-weight:700;color:var(--primary);">📋 전체 팀 고정 지출 내역</div>
       <button class="btn btn-csv btn-lg" onclick="downloadAllCSV()" style="display:flex;align-items:center;gap:6px;">📥 전체 CSV 다운로드</button>
     </div>
+    <!-- 검색 바 -->
+    <div class="card" style="padding:14px 18px;margin-bottom:16px;background:linear-gradient(135deg,#F8FAFC,#EFF6FF);border:1px solid #DBEAFE;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap;">🔍 서비스 / 업체 검색</span>
+        <input type="text" id="adminSearchInput" placeholder="서비스명, 업체명 또는 카드번호(끝4자리)로 검색..."
+               style="flex:1;min-width:220px;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff;transition:border .2s;"
+               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+               onkeyup="if(event.key==='Enter') adminAllDetailSearch()">
+        <button class="btn" onclick="adminAllDetailSearch()"
+                style="background:var(--accent);color:#fff;padding:8px 18px;font-size:13px;border-radius:8px;font-weight:600;">검색</button>
+        <button class="btn" onclick="adminAllDetailClearSearch()"
+                style="background:#E5E7EB;color:var(--text-secondary);padding:8px 14px;font-size:13px;border-radius:8px;">초기화</button>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">
+        💡 동일 서비스를 사용하는 팀을 한눈에 확인할 수 있습니다. 법인카드 실제 내역의 업체명이나 카드번호로 검색하면 등록 여부를 비교할 수 있습니다.
+      </div>
+    </div>
     <div id="adminAllDetail"></div>
   </div>
 
@@ -2352,6 +2369,156 @@ function renderAdminAllDetail() {
   }
 
   area.innerHTML = html || '<div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">제출된 데이터가 없습니다.</div>';
+}
+
+// ══════════════════════════════════
+//  Admin: 전체 상세 확인 - 검색 기능
+// ══════════════════════════════════
+function highlightSearch(text, query) {
+  if (!query || !text) return text || '';
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(text).replace(new RegExp(`(${escaped})`, 'gi'),
+    '<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px;">$1</mark>');
+}
+
+function adminAllDetailSearch() {
+  const input = document.getElementById('adminSearchInput');
+  const query = (input ? input.value : '').trim();
+  if (!query) { renderAdminAllDetail(); return; }
+
+  const area = document.getElementById('adminAllDetail');
+  const teams = Object.keys(allTeamsData);
+  const rate = getExchangeRate();
+  const q = query.toLowerCase();
+
+  // 전체 데이터에서 매칭 항목 수집
+  const matches = [];
+  teams.forEach(teamName => {
+    const data = allTeamsData[teamName];
+    const mArr = data.monthly ? Object.entries(data.monthly) : [];
+    const yArr = data.yearly ? Object.entries(data.yearly) : [];
+
+    mArr.forEach(([id, r]) => {
+      if ((r.service||'').toLowerCase().includes(q) ||
+          (r.vendor||'').toLowerCase().includes(q) ||
+          (r.card||'').includes(q)) {
+        matches.push({ ...r, _team: teamName, _type: '월 결제', _id: id });
+      }
+    });
+    yArr.forEach(([id, r]) => {
+      if ((r.service||'').toLowerCase().includes(q) ||
+          (r.vendor||'').toLowerCase().includes(q) ||
+          (r.card||'').includes(q)) {
+        matches.push({ ...r, _team: teamName, _type: '연 결제', _id: id });
+      }
+    });
+  });
+
+  // 결과 없음
+  if (matches.length === 0) {
+    area.innerHTML = `<div class="card" style="text-align:center;padding:48px;color:var(--text-muted);">
+      <div style="font-size:36px;margin-bottom:12px;">🔍</div>
+      <div style="font-size:14px;">검색어 "<strong style="color:var(--primary);">${query}</strong>"에 해당하는 항목이 없습니다.</div>
+      <div style="font-size:12px;margin-top:8px;color:#9CA3AF;">서비스명, 업체명, 카드번호(끝4자리)로 검색해 보세요.</div>
+    </div>`;
+    return;
+  }
+
+  // 서비스명 기준 그룹핑 (동일 서비스 → 어느 팀이 사용하는지 확인)
+  const serviceGroups = {};
+  matches.forEach(m => {
+    const key = (m.service || '(미입력)').trim();
+    if (!serviceGroups[key]) serviceGroups[key] = [];
+    serviceGroups[key].push(m);
+  });
+
+  const uniqueTeams = [...new Set(matches.map(m => m._team))];
+
+  // 요약 배너
+  let html = `<div class="card" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);padding:14px 18px;margin-bottom:16px;border-left:4px solid var(--accent);">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:13px;color:var(--primary);">
+        🔍 "<strong>${query}</strong>" 검색 결과: <strong>${matches.length}건</strong>
+        (${Object.keys(serviceGroups).length}개 서비스, ${uniqueTeams.length}개 팀)
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${uniqueTeams.map(t => `<span style="background:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;color:var(--primary);border:1px solid #BFDBFE;">${t}</span>`).join('')}
+      </div>
+    </div>
+  </div>`;
+
+  // 서비스 그룹별 렌더링 (복수 팀이 사용하는 서비스 우선)
+  const sortedGroups = Object.entries(serviceGroups).sort((a, b) => {
+    const aTeams = new Set(a[1].map(m => m._team)).size;
+    const bTeams = new Set(b[1].map(m => m._team)).size;
+    if (bTeams !== aTeams) return bTeams - aTeams;
+    return b[1].length - a[1].length;
+  });
+
+  sortedGroups.forEach(([serviceName, items]) => {
+    const teamNames = [...new Set(items.map(m => m._team))];
+    const isMultiTeam = teamNames.length > 1;
+
+    // 서비스 그룹 합계 계산
+    let groupTotal = 0;
+    items.forEach(r => {
+      const cur = r.currency || 'KRW';
+      const amt = parseAmount(r.amount);
+      groupTotal += cur === 'USD' ? amt * rate : amt;
+    });
+
+    html += `<div class="table-card" style="margin-bottom:16px;${isMultiTeam ? 'border-left:3px solid #F59E0B;' : ''}">
+      <div class="table-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-size:14px;display:flex;align-items:center;gap:8px;margin:0;">
+          ${highlightSearch(serviceName, query)}
+          <span class="example-badge" style="background:${isMultiTeam ? '#FEF3C7;color:#92400E' : '#DBEAFE;color:#1E40AF'};font-size:11px;">${teamNames.length}개 팀 사용</span>
+          ${isMultiTeam ? '<span style="font-size:11px;color:#D97706;font-weight:500;">⚠ 중복 서비스</span>' : ''}
+        </h3>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:12px;color:var(--text-muted);">${teamNames.join(' · ')}</span>
+          <span style="font-size:12px;font-weight:700;color:var(--primary);">합계: ${formatNumber(Math.round(groupTotal))}원</span>
+        </div>
+      </div>
+      <div class="table-scroll"><table class="preview-table"><thead><tr>
+        <th>No.</th><th>팀</th><th>카테고리</th><th>서비스명</th><th>업체명</th><th>결제유형</th><th>플랜</th><th>통화</th><th>금액</th><th>결제주기</th><th>카드</th><th>부서</th><th>계정</th><th>비고</th>
+      </tr></thead><tbody>`;
+
+    items.forEach((r, i) => {
+      const cur = r.currency || 'KRW';
+      const amt = parseAmount(r.amount);
+      const amtKrw = cur === 'USD' ? amt * rate : amt;
+      const amtDisplay = cur === 'USD'
+        ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
+        : `${formatNumber(amt)}원`;
+
+      html += `<tr>
+        <td><span class="row-num">${i+1}</span></td>
+        <td><strong>${r._team}</strong></td>
+        <td>${r.category||'기타'}</td>
+        <td><strong>${highlightSearch(r.service||'', query)}</strong></td>
+        <td>${highlightSearch(r.vendor||'', query)}</td>
+        <td><span class="example-badge ${r._type==='월 결제'?'badge-monthly':'badge-yearly'}">${r._type}</span></td>
+        <td>${r.plan||''}</td>
+        <td>${cur}</td>
+        <td><strong>${amtDisplay}</strong></td>
+        <td>${r.cycle||''}</td>
+        <td><span class="card-chip">${highlightSearch(r.card||'', query)}</span></td>
+        <td>${r.dept||''}</td>
+        <td style="font-size:11px;">${r.account||''}</td>
+        <td>${r.note||''}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div></div>`;
+  });
+
+  area.innerHTML = html;
+}
+
+function adminAllDetailClearSearch() {
+  const input = document.getElementById('adminSearchInput');
+  if (input) input.value = '';
+  renderAdminAllDetail();
 }
 
 function adminDownloadTeamCSV(teamName) {
