@@ -1013,6 +1013,7 @@
     <button class="sub-tab active" onclick="switchAdminTab('analytics')">📊 비용 분석</button>
     <button class="sub-tab" onclick="switchAdminTab('overview')">팀별 상세 확인</button>
     <button class="sub-tab" onclick="switchAdminTab('allOverview')">전체 상세 확인</button>
+    <button class="sub-tab" onclick="switchAdminTab('merge')">🔀 팀 통합</button>
     <button class="sub-tab" onclick="switchAdminTab('changePw')" style="margin-left:auto;">🔒 비밀번호 변경</button>
   </div>
 
@@ -1090,6 +1091,50 @@
       <div id="teamStatusSummary" style="font-size:11px;color:var(--text-muted);"></div>
     </div>
     <div class="team-status-grid" id="teamStatusGrid"></div>
+  </div>
+
+  <!-- 🔀 팀 통합 도구 -->
+  <div id="adminMerge" class="section">
+    <div class="card">
+      <div class="card-title"><div class="icon purple">🔀</div> 팀 통합 도구</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.7;">
+        조직 개편 등으로 <strong>여러 팀의 고정지출 내역을 하나의 팀으로 합쳐야 할 때</strong> 사용합니다.<br>
+        ① 원본 팀(들) 선택 → ② 새(통합) 팀 이름 입력 → ③ 미리보기 → ④ 실행<br>
+        <span style="color:#B91C1C;font-weight:600;">⚠ 통합 실행 시 원본 팀은 그대로 보존됩니다.</span> 확인 후 별도로 삭제하세요.
+      </p>
+
+      <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;">① 원본 팀 선택 (2개 이상)</div>
+        <div id="mergeSourceList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+
+      <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;">② 새(통합) 팀 이름</div>
+        <input type="text" id="mergeTargetName" placeholder="예: 서비스운영본부" style="width:100%;max-width:360px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;">
+        <div style="font-size:11.5px;color:var(--text-muted);margin-top:6px;">※ 이미 존재하는 팀 이름이면 통합이 거부됩니다.</div>
+      </div>
+
+      <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;">③ 메타 정보 처리</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12.5px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="radio" name="mergeMetaStrategy" value="first" checked>
+            <span>가장 먼저 선택한 팀의 정보 사용 (단순)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="radio" name="mergeMetaStrategy" value="combine">
+            <span>작성자/비고/메일을 결합해서 표시 (권장)</span>
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="previewMergeTeams()" style="padding:10px 22px;font-size:13px;">🔍 미리보기</button>
+        <button class="btn btn-accent" id="mergeExecuteBtn" onclick="executeMergeTeams()" disabled style="padding:10px 22px;font-size:13px;opacity:0.5;">✅ 통합 실행 (Firebase 저장)</button>
+      </div>
+
+      <div id="mergePreviewArea" style="margin-top:18px;"></div>
+    </div>
   </div>
 
   <!-- Change Password -->
@@ -1347,7 +1392,7 @@ function updateStepIndicator(currentStep) {
 }
 
 function switchAdminTab(tab) {
-  const tabs = ['analytics','overview','allOverview','changePw'];
+  const tabs = ['analytics','overview','allOverview','merge','changePw'];
   document.querySelectorAll('#mode-admin .sub-tab').forEach((b, i) => b.classList.toggle('active', tabs[i] === tab));
   tabs.forEach(t => {
     const el = document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1355,6 +1400,7 @@ function switchAdminTab(tab) {
   });
   if (tab === 'allOverview') renderAdminAllDetail();
   if (tab === 'analytics') renderAnalyticsDashboard();
+  if (tab === 'merge') renderMergeTool();
 }
 
 // ══════════════════════════════════
@@ -3824,6 +3870,415 @@ function renderEmailCenter() {
     }
   }
   updateAutoSendModeButtons();
+}
+
+// ══════════════════════════════════
+//  관리자: 팀 통합 도구 (조직 개편 대응)
+//  - 여러 팀의 monthly/yearly 내역을 하나의 새 팀으로 합치기
+//  - 원본 팀은 보존 (사용자가 미리보기 확인 후 별도 삭제 요청)
+//  - Hiworks 업로드 체크(hwUploadData)도 같이 이전
+// ══════════════════════════════════
+let _mergePreviewCache = null; // { sourceTeams, targetName, mergedData, mergedUploads, metaStrategy }
+
+function renderMergeTool() {
+  const listEl = document.getElementById('mergeSourceList');
+  if (!listEl) return;
+  const teams = Object.keys(allTeamsData).sort();
+  if (teams.length === 0) {
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px;">등록된 팀이 없습니다.</div>';
+    return;
+  }
+  listEl.innerHTML = teams.map(t => `
+    <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#fff;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12.5px;">
+      <input type="checkbox" class="merge-source-cb" value="${t.replace(/"/g,'&quot;')}">
+      <span>${t}</span>
+    </label>
+  `).join('');
+
+  // 통합 실행 버튼 비활성화 (미리보기부터 다시 해야 함)
+  const exec = document.getElementById('mergeExecuteBtn');
+  if (exec) { exec.disabled = true; exec.style.opacity = 0.5; }
+  const prevArea = document.getElementById('mergePreviewArea');
+  if (prevArea) prevArea.innerHTML = '';
+  _mergePreviewCache = null;
+}
+
+// 선택 + 검증 + 합치기 결과 계산 (메모리상에서만, Firebase 저장은 X)
+function _computeMergedData(sourceTeams, targetName, metaStrategy) {
+  const mergedMonthly = {};
+  const mergedYearly = {};
+  let mIdx = 0, yIdx = 0;
+  const writers = [];
+  const notes = [];
+  const emails = [];
+  const months = [];
+  let firstNotifyEmail = '';
+  const sourceMetaList = [];
+
+  for (const team of sourceTeams) {
+    const data = allTeamsData[team];
+    if (!data) continue;
+    sourceMetaList.push({ team, meta: data.meta || {} });
+
+    const meta = data.meta || {};
+    if (meta.writer) writers.push(`${team}:${meta.writer}`);
+    if (meta.note) notes.push(`[${team}] ${meta.note}`);
+    if (meta.notifyEmail) { emails.push(meta.notifyEmail); if (!firstNotifyEmail) firstNotifyEmail = meta.notifyEmail; }
+    if (meta.month) months.push(meta.month);
+
+    // monthly 합치기 (키 재부여)
+    const monthly = data.monthly || {};
+    Object.keys(monthly).sort().forEach(k => {
+      const row = monthly[k];
+      if (row && (row.service || row.vendor)) {
+        mergedMonthly['m' + mIdx] = Object.assign({}, row, { _origTeam: team });
+        mIdx++;
+      }
+    });
+
+    // yearly 합치기 (키 재부여)
+    const yearly = data.yearly || {};
+    Object.keys(yearly).sort().forEach(k => {
+      const row = yearly[k];
+      if (row && (row.service || row.vendor)) {
+        mergedYearly['y' + yIdx] = Object.assign({}, row, { _origTeam: team });
+        yIdx++;
+      }
+    });
+  }
+
+  // meta 전략
+  let metaWriter, metaNote, metaNotifyEmail, metaMonth;
+  if (metaStrategy === 'combine') {
+    metaWriter = writers.join(', ');
+    metaNote = notes.join(' / ');
+    // 메일은 중복 제거 후 첫 번째 사용 (한 개만 입력 가능한 필드라서)
+    const uniqEmails = Array.from(new Set(emails));
+    metaNotifyEmail = uniqEmails[0] || '';
+    metaMonth = months.sort().pop() || ''; // 가장 최근 월
+  } else {
+    // first: 가장 먼저 선택한(=배열 첫번째) 팀의 meta
+    const firstMeta = (sourceMetaList[0] && sourceMetaList[0].meta) || {};
+    metaWriter = firstMeta.writer || '';
+    metaNote = firstMeta.note || '';
+    metaNotifyEmail = firstMeta.notifyEmail || '';
+    metaMonth = firstMeta.month || '';
+  }
+
+  const mergedMeta = {
+    team: targetName,
+    writer: metaWriter,
+    month: metaMonth,
+    note: metaNote,
+    notifyEmail: metaNotifyEmail,
+    submittedAt: new Date().toISOString(),
+    mergedFrom: sourceTeams.slice() // 어느 팀들에서 합쳐졌는지 기록
+  };
+
+  return {
+    meta: mergedMeta,
+    monthly: mergedMonthly,
+    yearly: mergedYearly,
+    _stats: {
+      monthlyCount: mIdx,
+      yearlyCount: yIdx,
+      sourceCount: sourceTeams.length,
+      sourceMetaList
+    }
+  };
+}
+
+// Hiworks 업로드 상태도 합치기: 원본 중 하나라도 checked면 새 팀도 checked
+function _computeMergedUploads(sourceTeams, targetName) {
+  const result = {}; // { 'YYYY-MM': { checked, updatedAt, mergedFrom: [...] } }
+  const months = Object.keys(hwUploadData || {});
+  for (const mk of months) {
+    const monthData = hwUploadData[mk] || {};
+    const checkedSources = sourceTeams.filter(t => monthData[t]?.checked);
+    if (checkedSources.length > 0) {
+      const latest = checkedSources
+        .map(t => monthData[t]?.updatedAt)
+        .filter(Boolean)
+        .sort()
+        .pop() || new Date().toISOString();
+      result[mk] = { checked: true, updatedAt: latest, mergedFrom: checkedSources };
+    }
+  }
+  return result;
+}
+
+function previewMergeTeams() {
+  // 1) 선택된 원본 팀 수집
+  const cbs = document.querySelectorAll('.merge-source-cb:checked');
+  const sourceTeams = Array.from(cbs).map(c => c.value);
+  const targetName = (document.getElementById('mergeTargetName')?.value || '').trim();
+  const metaStrategy = (document.querySelector('input[name="mergeMetaStrategy"]:checked')?.value) || 'first';
+
+  // 2) 유효성 검사
+  if (sourceTeams.length < 2) {
+    showToast('⚠ 원본 팀을 2개 이상 선택해 주세요.');
+    return;
+  }
+  if (!targetName) {
+    showToast('⚠ 새(통합) 팀 이름을 입력하세요.');
+    document.getElementById('mergeTargetName')?.focus();
+    return;
+  }
+  if (sourceTeams.includes(targetName)) {
+    showToast('⚠ 새 팀 이름이 원본 팀과 겹칩니다. 다른 이름을 사용하세요.');
+    return;
+  }
+  if (allTeamsData[targetName]) {
+    showToast(`⚠ "${targetName}" 팀이 이미 존재합니다. 다른 이름을 사용하세요.`);
+    return;
+  }
+
+  // 3) 합치기 계산
+  const merged = _computeMergedData(sourceTeams, targetName, metaStrategy);
+  const mergedUploads = _computeMergedUploads(sourceTeams, targetName);
+
+  // 4) 캐시 저장 (실행 단계에서 그대로 사용)
+  _mergePreviewCache = { sourceTeams, targetName, merged, mergedUploads, metaStrategy };
+
+  // 5) 미리보기 렌더링
+  _renderMergePreview(_mergePreviewCache);
+
+  // 6) 실행 버튼 활성화
+  const exec = document.getElementById('mergeExecuteBtn');
+  if (exec) { exec.disabled = false; exec.style.opacity = 1; }
+}
+
+function _renderMergePreview(cache) {
+  const area = document.getElementById('mergePreviewArea');
+  if (!area) return;
+  const { sourceTeams, targetName, merged, mergedUploads } = cache;
+  const stats = merged._stats;
+
+  const monthlyRows = Object.keys(merged.monthly).sort((a,b) => parseInt(a.slice(1)) - parseInt(b.slice(1)))
+    .map((k, i) => {
+      const r = merged.monthly[k];
+      return `<tr>
+        <td>${i+1}</td>
+        <td><span style="font-size:10px;background:#E0E7FF;color:#3730A3;padding:2px 6px;border-radius:3px;">${r._origTeam || '-'}</span></td>
+        <td>${r.category||''}</td>
+        <td><strong>${r.service||''}</strong></td>
+        <td>${r.vendor||''}</td>
+        <td>${r.purpose||''}</td>
+        <td>${r.currency||'KRW'} ${formatNumber(Number(String(r.amount||'').replace(/[^\d.-]/g,'')) || 0)}</td>
+        <td>${r.payDate||''}</td>
+        <td style="font-size:10.5px;">${r.card||''}</td>
+      </tr>`;
+    }).join('');
+
+  const yearlyRows = Object.keys(merged.yearly).sort((a,b) => parseInt(a.slice(1)) - parseInt(b.slice(1)))
+    .map((k, i) => {
+      const r = merged.yearly[k];
+      return `<tr>
+        <td>${i+1}</td>
+        <td><span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:3px;">${r._origTeam || '-'}</span></td>
+        <td>${r.category||''}</td>
+        <td><strong>${r.service||''}</strong></td>
+        <td>${r.vendor||''}</td>
+        <td>${r.purpose||''}</td>
+        <td>${r.currency||'KRW'} ${formatNumber(Number(String(r.amount||'').replace(/[^\d.-]/g,'')) || 0)}</td>
+        <td style="font-size:10.5px;">${r.payDate||''} ~ ${r.endDate||''}</td>
+        <td style="font-size:10.5px;">${r.card||''}</td>
+      </tr>`;
+    }).join('');
+
+  const uploadKeys = Object.keys(mergedUploads).sort();
+  const uploadRows = uploadKeys.length === 0
+    ? '<div style="font-size:11.5px;color:var(--text-muted);">이전될 업로드 체크 이력이 없습니다.</div>'
+    : uploadKeys.map(mk => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;margin-bottom:4px;font-size:11.5px;">
+          <span><strong>${mk}</strong> · ✅ 업로드 완료</span>
+          <span style="color:var(--text-muted);">출처: ${mergedUploads[mk].mergedFrom.join(', ')}</span>
+        </div>
+      `).join('');
+
+  area.innerHTML = `
+    <div class="card" style="border:2px solid var(--accent);background:#EFF6FF;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:15px;font-weight:700;color:var(--primary);">🔍 통합 미리보기</div>
+        <span style="font-size:11px;color:var(--text-muted);">※ 아직 Firebase 에 저장되지 않았습니다.</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;">
+        <div style="text-align:center;padding:10px;background:#fff;border-radius:6px;">
+          <div style="font-size:11px;color:var(--text-muted);">원본 팀 수</div>
+          <div style="font-size:18px;font-weight:700;color:var(--accent);">${stats.sourceCount}개</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#fff;border-radius:6px;">
+          <div style="font-size:11px;color:var(--text-muted);">월 결제 행</div>
+          <div style="font-size:18px;font-weight:700;color:#10B981;">${stats.monthlyCount}건</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#fff;border-radius:6px;">
+          <div style="font-size:11px;color:var(--text-muted);">연 결제 행</div>
+          <div style="font-size:18px;font-weight:700;color:#F59E0B;">${stats.yearlyCount}건</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#fff;border-radius:6px;">
+          <div style="font-size:11px;color:var(--text-muted);">업로드 이력</div>
+          <div style="font-size:18px;font-weight:700;color:#8B5CF6;">${uploadKeys.length}개월</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:14px;font-size:12.5px;">
+        <div style="font-weight:700;margin-bottom:8px;">📋 새 팀 메타 정보 (저장될 내용)</div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 12px;">
+          <div style="color:var(--text-muted);">팀명</div><div><strong>${merged.meta.team}</strong></div>
+          <div style="color:var(--text-muted);">작성자</div><div>${merged.meta.writer || '(없음)'}</div>
+          <div style="color:var(--text-muted);">해당 월</div><div>${merged.meta.month || '(없음)'}</div>
+          <div style="color:var(--text-muted);">안내메일</div><div>${merged.meta.notifyEmail || '<span style="color:#B91C1C;">(미등록)</span>'}</div>
+          <div style="color:var(--text-muted);">비고</div><div style="font-size:11.5px;">${merged.meta.note || '(없음)'}</div>
+          <div style="color:var(--text-muted);">통합 출처</div><div>${merged.meta.mergedFrom.join(', ')}</div>
+        </div>
+      </div>
+
+      ${stats.monthlyCount > 0 ? `
+      <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:14px;">
+        <div style="font-weight:700;margin-bottom:8px;font-size:12.5px;">💳 월 결제 서비스 (${stats.monthlyCount}건)</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead><tr style="background:#F1F5F9;">
+              <th style="padding:6px;border:1px solid var(--border);">No.</th>
+              <th style="padding:6px;border:1px solid var(--border);">원본팀</th>
+              <th style="padding:6px;border:1px solid var(--border);">카테고리</th>
+              <th style="padding:6px;border:1px solid var(--border);">서비스명</th>
+              <th style="padding:6px;border:1px solid var(--border);">업체명</th>
+              <th style="padding:6px;border:1px solid var(--border);">결재목적</th>
+              <th style="padding:6px;border:1px solid var(--border);">월 금액</th>
+              <th style="padding:6px;border:1px solid var(--border);">결제일</th>
+              <th style="padding:6px;border:1px solid var(--border);">카드</th>
+            </tr></thead>
+            <tbody>${monthlyRows}</tbody>
+          </table>
+        </div>
+      </div>` : ''}
+
+      ${stats.yearlyCount > 0 ? `
+      <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:14px;">
+        <div style="font-weight:700;margin-bottom:8px;font-size:12.5px;">📅 연 결제 서비스 (${stats.yearlyCount}건)</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead><tr style="background:#F1F5F9;">
+              <th style="padding:6px;border:1px solid var(--border);">No.</th>
+              <th style="padding:6px;border:1px solid var(--border);">원본팀</th>
+              <th style="padding:6px;border:1px solid var(--border);">카테고리</th>
+              <th style="padding:6px;border:1px solid var(--border);">서비스명</th>
+              <th style="padding:6px;border:1px solid var(--border);">업체명</th>
+              <th style="padding:6px;border:1px solid var(--border);">결재목적</th>
+              <th style="padding:6px;border:1px solid var(--border);">연 금액</th>
+              <th style="padding:6px;border:1px solid var(--border);">기간</th>
+              <th style="padding:6px;border:1px solid var(--border);">카드</th>
+            </tr></thead>
+            <tbody>${yearlyRows}</tbody>
+          </table>
+        </div>
+      </div>` : ''}
+
+      <div style="background:#fff;padding:12px;border-radius:6px;">
+        <div style="font-weight:700;margin-bottom:8px;font-size:12.5px;">📨 이전될 Hiworks 업로드 체크 이력</div>
+        ${uploadRows}
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;font-size:12px;color:#92400E;">
+        💡 확인 후 위쪽의 <strong>"✅ 통합 실행"</strong> 버튼을 누르면 새 팀이 Firebase에 저장됩니다.<br>
+        💡 원본 팀(${sourceTeams.join(', ')})은 <strong>그대로 보존</strong>됩니다. 통합 결과 확인 후 별도로 삭제해 주세요.
+      </div>
+    </div>
+  `;
+}
+
+function executeMergeTeams() {
+  if (!_mergePreviewCache) {
+    showToast('⚠ 먼저 미리보기를 실행하세요.');
+    return;
+  }
+  const { sourceTeams, targetName, merged, mergedUploads } = _mergePreviewCache;
+
+  // 다시 한번 중복 확인 (실시간 변경 대비)
+  if (allTeamsData[targetName]) {
+    showToast(`⚠ "${targetName}" 팀이 이미 존재합니다. 미리보기를 다시 실행하세요.`);
+    return;
+  }
+
+  if (!confirm(
+    `다음 작업을 실행합니다:\n\n` +
+    `• 새 팀 "${targetName}" 생성\n` +
+    `• 원본 팀(${sourceTeams.join(', ')})의 내역 ` +
+    `(월 ${merged._stats.monthlyCount}건 / 연 ${merged._stats.yearlyCount}건)을 합쳐서 저장\n` +
+    `• Hiworks 업로드 이력 ${Object.keys(mergedUploads).length}개월 이전\n\n` +
+    `※ 원본 팀은 삭제되지 않습니다.\n\n진행하시겠습니까?`
+  )) return;
+
+  // 저장 페이로드: _origTeam 같은 내부 메타는 그대로 두어도 무방하지만 깔끔하게 보존
+  // (월/연 결제 행에 _origTeam 필드는 통합 출처 추적용으로 유지)
+  const payload = {
+    meta: merged.meta,
+    monthly: merged.monthly,
+    yearly: merged.yearly
+  };
+
+  // 1) /corp_card_fixed/{targetName} 저장
+  fbDb.ref(`${DB_ROOT}/${targetName}`).set(payload)
+    .then(() => {
+      // 2) Hiworks 업로드 이력 이전: 각 월별로 set
+      const promises = Object.keys(mergedUploads).map(mk => {
+        return fbDb.ref(`${DB_HW_ROOT}/uploads/${mk}/${targetName}`).set({
+          checked: mergedUploads[mk].checked,
+          updatedAt: mergedUploads[mk].updatedAt,
+          mergedFrom: mergedUploads[mk].mergedFrom
+        });
+      });
+      return Promise.all(promises);
+    })
+    .then(() => {
+      showToast(`✅ "${targetName}" 팀 통합 완료! 결과를 확인하세요.`);
+      _renderMergeResult(_mergePreviewCache);
+      // 실행 버튼 다시 비활성화 (중복 실행 방지)
+      const exec = document.getElementById('mergeExecuteBtn');
+      if (exec) { exec.disabled = true; exec.style.opacity = 0.5; }
+    })
+    .catch(err => {
+      console.error('executeMergeTeams error:', err);
+      showToast(`✗ 통합 실패: ${err?.message || err}`);
+    });
+}
+
+function _renderMergeResult(cache) {
+  const area = document.getElementById('mergePreviewArea');
+  if (!area) return;
+  const { sourceTeams, targetName, merged, mergedUploads } = cache;
+
+  area.innerHTML = `
+    <div class="card" style="border:2px solid #10B981;background:#F0FDF4;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <span style="font-size:24px;">✅</span>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#065F46;">통합 완료</div>
+          <div style="font-size:11.5px;color:#047857;">새 팀 "${targetName}" 이 Firebase 에 저장되었습니다.</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;font-size:12.5px;">
+        <div style="font-weight:700;margin-bottom:8px;color:#065F46;">📊 통합 결과</div>
+        <div style="display:grid;grid-template-columns:140px 1fr;gap:6px 12px;">
+          <div style="color:var(--text-muted);">새 팀명</div><div><strong>${targetName}</strong></div>
+          <div style="color:var(--text-muted);">월 결제 행 수</div><div>${merged._stats.monthlyCount}건</div>
+          <div style="color:var(--text-muted);">연 결제 행 수</div><div>${merged._stats.yearlyCount}건</div>
+          <div style="color:var(--text-muted);">Hiworks 업로드 이전</div><div>${Object.keys(mergedUploads).length}개월</div>
+          <div style="color:var(--text-muted);">통합 출처</div><div>${sourceTeams.join(', ')}</div>
+        </div>
+      </div>
+
+      <div style="background:#FEF3C7;padding:12px;border-radius:6px;border:1px solid #FCD34D;font-size:12px;color:#92400E;line-height:1.7;">
+        <div style="font-weight:700;margin-bottom:4px;">📌 다음 단계</div>
+        ① "팀별 상세 확인" 탭에서 새 팀 <strong>${targetName}</strong> 의 내역이 올바르게 들어갔는지 확인해 주세요.<br>
+        ② 확인이 끝나면 원본 팀(${sourceTeams.join(', ')})의 데이터 삭제를 요청해 주세요.<br>
+        ③ 안내메일 센터에서 새 팀의 안내메일 주소를 (필요하다면) 등록/수정해 주세요.
+      </div>
+    </div>
+  `;
 }
 
 // ── 관리자: 팀별 안내메일 직접 등록/수정 ──
