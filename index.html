@@ -1135,6 +1135,31 @@
 
       <div id="mergePreviewArea" style="margin-top:18px;"></div>
     </div>
+
+    <!-- 🗑 다중 팀 삭제 (통합 완료 후 원본 팀 정리용) -->
+    <div class="card" style="margin-top:18px;border:1.5px solid #FCA5A5;background:#FFFBFB;">
+      <div class="card-title"><div class="icon red">🗑</div> 다중 팀 일괄 삭제</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.7;">
+        <strong style="color:#B91C1C;">⚠ 이 작업은 되돌릴 수 없습니다.</strong> 통합 완료 후 원본 팀을 정리하거나, 잘못 생성된 팀을 제거할 때 사용하세요.<br>
+        삭제 시 다음 항목이 함께 삭제됩니다:
+        <span style="font-size:11.5px;color:var(--text-muted);">① 팀의 월/연 결제 내역(corp_card_fixed) ② Hiworks 업로드 체크 이력(corp_card_fixed_hw/uploads). 발송 이력(history)은 감사 추적을 위해 보존됩니다.</span>
+      </p>
+
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;color:#B91C1C;">삭제할 팀 선택</div>
+          <button class="btn" onclick="renderDeleteTeamList()" style="font-size:11px;padding:5px 12px;background:#F3F4F6;color:var(--text-secondary);">🔄 목록 새로고침</button>
+        </div>
+        <div id="deleteTeamList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button class="btn" onclick="confirmDeleteSelectedTeams()" style="background:#DC2626;color:#fff;padding:10px 22px;font-size:13px;font-weight:600;">🗑 선택 팀 삭제</button>
+        <span style="font-size:11.5px;color:var(--text-muted);">※ 삭제 전 한번 더 확인 다이얼로그가 표시됩니다.</span>
+      </div>
+
+      <div id="deleteResultArea" style="margin-top:14px;"></div>
+    </div>
   </div>
 
   <!-- Change Password -->
@@ -3906,14 +3931,14 @@ function renderMergeTool() {
   const teams = Object.keys(allTeamsData).sort();
   if (teams.length === 0) {
     listEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px;">등록된 팀이 없습니다.</div>';
-    return;
+  } else {
+    listEl.innerHTML = teams.map(t => `
+      <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#fff;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12.5px;">
+        <input type="checkbox" class="merge-source-cb" value="${t.replace(/"/g,'&quot;')}">
+        <span>${t}</span>
+      </label>
+    `).join('');
   }
-  listEl.innerHTML = teams.map(t => `
-    <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#fff;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12.5px;">
-      <input type="checkbox" class="merge-source-cb" value="${t.replace(/"/g,'&quot;')}">
-      <span>${t}</span>
-    </label>
-  `).join('');
 
   // 통합 실행 버튼 비활성화 (미리보기부터 다시 해야 함)
   const exec = document.getElementById('mergeExecuteBtn');
@@ -3921,7 +3946,178 @@ function renderMergeTool() {
   const prevArea = document.getElementById('mergePreviewArea');
   if (prevArea) prevArea.innerHTML = '';
   _mergePreviewCache = null;
+
+  // 삭제 목록도 같이 그리기
+  renderDeleteTeamList();
 }
+
+// ──────────────────────────────────
+// 다중 팀 일괄 삭제 (통합 후 원본 정리용)
+// ──────────────────────────────────
+function renderDeleteTeamList() {
+  const listEl = document.getElementById('deleteTeamList');
+  if (!listEl) return;
+  const teams = Object.keys(allTeamsData).sort();
+  if (teams.length === 0) {
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px;">등록된 팀이 없습니다.</div>';
+    return;
+  }
+  listEl.innerHTML = teams.map(t => {
+    const d = allTeamsData[t] || {};
+    const mCount = d.monthly ? Object.keys(d.monthly).length : 0;
+    const yCount = d.yearly ? Object.keys(d.yearly).length : 0;
+    const detail = (mCount + yCount > 0) ? `(월${mCount}/연${yCount})` : '(빈 팀)';
+    return `
+      <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#fff;border:1.5px solid #FCA5A5;border-radius:20px;cursor:pointer;font-size:12.5px;">
+        <input type="checkbox" class="delete-team-cb" value="${t.replace(/"/g,'&quot;')}">
+        <span style="font-weight:600;color:#B91C1C;">${t}</span>
+        <span style="font-size:10.5px;color:var(--text-muted);">${detail}</span>
+      </label>
+    `;
+  }).join('');
+  // 결과 영역도 초기화
+  const r = document.getElementById('deleteResultArea');
+  if (r) r.innerHTML = '';
+}
+
+function confirmDeleteSelectedTeams() {
+  const cbs = document.querySelectorAll('.delete-team-cb:checked');
+  const targets = Array.from(cbs).map(c => c.value);
+  if (targets.length === 0) {
+    showToast('⚠ 삭제할 팀을 1개 이상 선택해 주세요.');
+    return;
+  }
+
+  // 1차 확인
+  const summary = targets.map(t => {
+    const d = allTeamsData[t] || {};
+    const mCount = d.monthly ? Object.keys(d.monthly).length : 0;
+    const yCount = d.yearly ? Object.keys(d.yearly).length : 0;
+    return `• ${t} (월 ${mCount}건 / 연 ${yCount}건)`;
+  }).join('\n');
+
+  if (!confirm(
+    `다음 ${targets.length}개 팀을 영구적으로 삭제합니다.\n\n${summary}\n\n` +
+    `※ 월/연 결제 내역과 Hiworks 업로드 체크 이력이 모두 삭제됩니다.\n` +
+    `※ 발송 이력(history)은 감사를 위해 보존됩니다.\n\n` +
+    `이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`
+  )) return;
+
+  // 2차 확인 (실수 방지 — 팀 이름을 직접 타이핑하게 함)
+  const expected = targets.length === 1 ? targets[0] : '삭제';
+  const promptMsg = targets.length === 1
+    ? `최종 확인: 정말 삭제하려면 팀 이름 "${expected}" 를 정확히 입력하세요.`
+    : `최종 확인: 정말 삭제하려면 "삭제" 를 정확히 입력하세요. (${targets.length}개 팀 일괄 삭제)`;
+  const typed = prompt(promptMsg, '');
+  if (typed === null) { showToast('삭제 취소됨'); return; }
+  if (typed !== expected) {
+    showToast(`⚠ 입력값이 일치하지 않습니다. 삭제 취소됨.`);
+    return;
+  }
+
+  executeDeleteSelectedTeams(targets);
+}
+
+async function executeDeleteSelectedTeams(targets) {
+  const resultEl = document.getElementById('deleteResultArea');
+  if (resultEl) {
+    resultEl.innerHTML = `
+      <div style="padding:10px 14px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;font-size:12px;color:#92400E;">
+        🔄 삭제 진행 중... (${targets.length}개 팀)
+      </div>
+    `;
+  }
+
+  const results = []; // {team, ok, errors:[]}
+
+  for (const team of targets) {
+    const teamResult = { team, ok: true, errors: [], deletedUploads: 0 };
+
+    // 1) /corp_card_fixed/{team} 삭제
+    try {
+      await fbDb.ref(`${DB_ROOT}/${team}`).remove();
+    } catch (e) {
+      teamResult.ok = false;
+      teamResult.errors.push(`팀 데이터 삭제 실패: ${e?.message || e}`);
+    }
+
+    // 2) /corp_card_fixed_hw/uploads/{YYYY-MM}/{team} 삭제 (해당하는 모든 월)
+    try {
+      const months = Object.keys(hwUploadData || {});
+      for (const mk of months) {
+        if (hwUploadData[mk] && hwUploadData[mk][team] !== undefined) {
+          try {
+            await fbDb.ref(`${DB_HW_ROOT}/uploads/${mk}/${team}`).remove();
+            teamResult.deletedUploads++;
+          } catch (eu) {
+            teamResult.errors.push(`업로드 이력(${mk}) 삭제 실패: ${eu?.message || eu}`);
+          }
+        }
+      }
+    } catch (e) {
+      teamResult.errors.push(`업로드 이력 정리 실패: ${e?.message || e}`);
+    }
+
+    // 로컬 캐시도 즉시 정리 (실시간 리스너가 곧 덮어쓰지만 즉각 반영)
+    if (teamResult.ok) {
+      delete allTeamsData[team];
+    }
+
+    results.push(teamResult);
+  }
+
+  // 화면 다시 그리기
+  renderTeamStatusForAdmin();
+  renderAdminTeamChips();
+  if (typeof renderEmailCenter === 'function') renderEmailCenter();
+  renderDeleteTeamList();
+
+  // 결과 렌더링
+  const successCount = results.filter(r => r.ok && r.errors.length === 0).length;
+  const partialCount = results.filter(r => r.ok && r.errors.length > 0).length;
+  const failCount = results.filter(r => !r.ok).length;
+
+  if (resultEl) {
+    const items = results.map(r => {
+      const status = !r.ok ? '<span style="color:#DC2626;font-weight:700;">❌ 실패</span>'
+        : (r.errors.length > 0 ? '<span style="color:#D97706;font-weight:700;">⚠ 일부 오류</span>'
+                                : '<span style="color:#059669;font-weight:700;">✅ 완료</span>');
+      const errs = r.errors.length > 0
+        ? `<div style="font-size:11px;color:#B91C1C;margin-top:3px;">${r.errors.map(e => '• ' + e).join('<br>')}</div>`
+        : '';
+      return `
+        <div style="display:flex;flex-direction:column;padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:5px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>${r.team}</strong> <span style="color:var(--text-muted);font-size:11px;">· 업로드 이력 ${r.deletedUploads}건 정리</span></div>
+            ${status}
+          </div>
+          ${errs}
+        </div>
+      `;
+    }).join('');
+
+    const summaryColor = failCount > 0 ? '#FEE2E2' : (partialCount > 0 ? '#FEF3C7' : '#D1FAE5');
+    const summaryBorder = failCount > 0 ? '#FECACA' : (partialCount > 0 ? '#FCD34D' : '#A7F3D0');
+    const summaryText = failCount > 0 ? '#991B1B' : (partialCount > 0 ? '#92400E' : '#065F46');
+
+    resultEl.innerHTML = `
+      <div style="padding:12px 14px;background:${summaryColor};border:1px solid ${summaryBorder};border-radius:6px;color:${summaryText};font-size:12.5px;margin-bottom:10px;">
+        <strong>삭제 결과:</strong> 성공 ${successCount}건${partialCount > 0 ? ` · 일부 오류 ${partialCount}건` : ''}${failCount > 0 ? ` · 실패 ${failCount}건` : ''}
+      </div>
+      <div>${items}</div>
+    `;
+  }
+
+  if (failCount === 0 && partialCount === 0) {
+    showToast(`✅ ${successCount}개 팀 삭제 완료`);
+  } else if (failCount === 0) {
+    showToast(`⚠ ${successCount}개 완료, ${partialCount}개 부분 오류 — 결과 확인`);
+  } else {
+    showToast(`❌ ${failCount}개 실패 — 결과 확인`);
+  }
+}
+
+
 
 // 선택 + 검증 + 합치기 결과 계산 (메모리상에서만, Firebase 저장은 X)
 function _computeMergedData(sourceTeams, targetName, metaStrategy) {
