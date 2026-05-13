@@ -424,6 +424,14 @@
   .email-team-row .team-name { font-weight: 700; color: var(--primary); min-width: 80px; }
   .email-team-row .team-email { font-family: monospace; font-size: 11.5px; color: var(--text-secondary); }
   .email-team-row .team-noemail { font-size: 11px; color: #B91C1C; font-weight: 600; }
+  /* 관리자 안내메일 직접 입력용 */
+  .email-team-row .admin-email-input { flex: 1; min-width: 180px; max-width: 280px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace; font-size: 11.5px; color: var(--text-secondary); background: #fff; transition: border-color 0.15s, box-shadow 0.15s; }
+  .email-team-row .admin-email-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+  .email-team-row .admin-email-input.empty { border-color: #FCA5A5; background: #FFF7F7; }
+  .email-team-row .admin-email-input.saved { border-color: #34D399; background: #F0FDF4; }
+  .email-save-btn { padding: 4px 9px; font-size: 11px; border: 1px solid #10B981; background: #fff; color: #047857; border-radius: 4px; cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.15s; }
+  .email-save-btn:hover { background: #10B981; color: #fff; }
+  .email-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .email-team-row .team-action { display: flex; gap: 6px; align-items: center; }
   .email-team-row .team-status { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
   .email-team-row.done .team-status { background: #D1FAE5; color: #065F46; }
@@ -3769,16 +3777,27 @@ function renderEmailCenter() {
     if (teams.length === 0) {
       listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">등록된 팀이 없습니다.</div>';
     } else {
-      listEl.innerHTML = teamRows.map(r => `
+      listEl.innerHTML = teamRows.map(r => {
+        const teamEsc = r.team.replace(/'/g,"\\'");
+        const emailVal = (r.email || '').replace(/"/g,'&quot;');
+        const inputClass = r.email ? 'admin-email-input' : 'admin-email-input empty';
+        return `
         <div class="email-team-row ${r.checked ? 'done' : 'pending'}">
           <span class="team-name">${r.team}</span>
-          ${r.email ? `<span class="team-email">${r.email}</span>` : `<span class="team-noemail">⚠ 안내메일 미등록</span>`}
+          <input type="email" class="${inputClass}"
+                 id="adminEmail_${r.team.replace(/[^a-zA-Z0-9가-힣]/g,'_')}"
+                 value="${emailVal}"
+                 placeholder="lead@netformrnd.com (관리자 직접 입력 가능)"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();adminSaveTeamNotifyEmail('${teamEsc}', this);}"
+                 oninput="this.classList.remove('saved');this.classList.toggle('empty', !this.value.trim());">
           <div class="team-action">
+            <button class="email-save-btn" onclick="adminSaveTeamNotifyEmail('${teamEsc}', this.parentElement.previousElementSibling)">💾 저장</button>
             <span class="team-status">${r.checked ? '✅ 업로드' : '☐ 미체크'}</span>
-            ${!r.checked && r.email ? `<button class="email-send-btn" onclick="sendNotifyEmailToTeam('${r.team.replace(/'/g,"\\'")}','${monthKey}','manual')">📤 안내메일 보내기</button>` : ''}
+            ${!r.checked && r.email ? `<button class="email-send-btn" onclick="sendNotifyEmailToTeam('${teamEsc}','${monthKey}','manual')">📤 안내메일 보내기</button>` : ''}
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
   }
 
@@ -3805,6 +3824,57 @@ function renderEmailCenter() {
     }
   }
   updateAutoSendModeButtons();
+}
+
+// ── 관리자: 팀별 안내메일 직접 등록/수정 ──
+// 팀에서 기입한 칸(staffNotifyEmail) 은 그대로 두고,
+// 경영관리팀에서 일괄 등록/수정/유지보수할 수 있도록 안내메일 센터에서 직접 입력 지원.
+function adminSaveTeamNotifyEmail(teamName, inputEl) {
+  if (!inputEl) return;
+  const newEmail = (inputEl.value || '').trim();
+
+  // 빈 값 허용 (등록 해제 의도) — 단, 형식 유효성 검사
+  if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    showToast('⚠ 올바른 이메일 형식을 입력하세요.');
+    inputEl.focus();
+    return;
+  }
+
+  // 팀 데이터가 없으면 (아직 한 번도 저장되지 않은 팀) 경고 후 중단
+  if (!allTeamsData[teamName]) {
+    showToast(`⚠ ${teamName} 팀 데이터가 없습니다. 팀에서 먼저 1회 저장이 필요합니다.`);
+    return;
+  }
+
+  const prev = allTeamsData[teamName].meta?.notifyEmail || '';
+  if (prev === newEmail) {
+    showToast('변경 사항이 없습니다.');
+    return;
+  }
+
+  // Firebase 의 meta/notifyEmail 만 부분 업데이트
+  fbDb.ref(`${DB_ROOT}/${teamName}/meta/notifyEmail`).set(newEmail)
+    .then(() => {
+      // 로컬 상태도 갱신 (실시간 리스너가 곧 덮어쓰지만 즉시 반영)
+      if (!allTeamsData[teamName].meta) allTeamsData[teamName].meta = {};
+      allTeamsData[teamName].meta.notifyEmail = newEmail;
+
+      // 시각 피드백
+      inputEl.classList.remove('empty');
+      inputEl.classList.add('saved');
+      setTimeout(() => inputEl.classList.remove('saved'), 1500);
+
+      showToast(newEmail
+        ? `✅ ${teamName} 안내메일 저장: ${newEmail}`
+        : `🗑 ${teamName} 안내메일 등록 해제`);
+
+      // 행 상태(보내기 버튼 노출 등) 다시 그리기
+      renderEmailCenter();
+    })
+    .catch(err => {
+      console.error('adminSaveTeamNotifyEmail error:', err);
+      showToast(`✗ 저장 실패: ${err?.message || err}`);
+    });
 }
 
 // ── 안내메일 발송 (단일 / 일괄 / 자동) ──
