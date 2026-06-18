@@ -3537,16 +3537,23 @@ function buildCSVForTeam(teamName) {
 function downloadAllCSV() {
   const teams = Object.keys(allTeamsData);
   if (teams.length === 0) { showToast('등록된 팀이 없습니다.'); return; }
+  // 모든 팀을 하나의 CSV 파일로 통합 (브라우저의 다중 파일 다운로드 차단 회피)
+  const BOM = '﻿';
+  let combined = BOM;
   let count = 0;
   teams.forEach(t => {
     const csv = buildCSVForTeam(t);
     if (csv) {
-      const month = allTeamsData[t].meta?.month?.replace('-','') || 'YYYYMM';
-      downloadBlobFile(csv, `법인카드_고정지출_${t}_${month}.csv`, 'text/csv;charset=utf-8;');
+      if (count > 0) combined += '\n\n========================================\n\n';
+      combined += csv.replace(/^﻿/, ''); // 개별 BOM 제거 (맨 앞 1개만 유지)
       count++;
     }
   });
-  showToast(`${count}개 팀 CSV 다운로드 완료`);
+  if (count === 0) { showToast('다운로드할 데이터가 없습니다.'); return; }
+  const now = new Date();
+  const stamp = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+  downloadBlobFile(combined, `법인카드_고정지출_전체_${stamp}.csv`, 'text/csv;charset=utf-8;');
+  showToast(`${count}개 팀 전체 CSV 다운로드 완료`);
 }
 
 function downloadCurrentTeamCSV() {
