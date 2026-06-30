@@ -600,28 +600,44 @@
 <!-- MODE: 공지 사항               -->
 <!-- ══════════════════════════ -->
 <div id="mode-notice" class="section active">
-  <div class="card">
-    <div class="card-title"><div class="icon yellow">⚡</div> 변경 사항</div>
-    <div class="notice-text">각 팀에서 발생하는 법인카드 지출 관리의 <strong>투명성과 효율성</strong>을 높이기 위해, 고정 지출에 대한 품의서 작성 방식을 아래와 같이 변경합니다.</div>
-    <div class="change-box">
-      <div class="label">품의 작성 방식 변경</div>
-      <div class="change-arrow">
-        <span class="change-from">최초 1회 품의</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        <span class="change-to">매월 품의서 작성</span>
-      </div>
-    </div>
-    <dl class="info-grid">
-      <dt>대상</dt><dd>각 팀별 법인카드 장기(고정) 지출 건</dd>
-      <dt>시행일</dt><dd><strong>2026년 3월 지출분</strong>부터</dd>
-    </dl>
-  </div>
-  <div class="card">
-    <div class="card-title"><div class="icon blue">🎯</div> 관리 체계 변경 목적</div>
-    <div class="notice-text" style="margin-bottom:14px;">단순한 절차 추가가 아닌, <strong>투명한 비용 관리와 효율적인 예산 운영</strong>을 위해 시행합니다.</div>
+  <div class="card" style="border:2px solid #DC2626;box-shadow:0 2px 12px rgba(220,38,38,0.15);">
+    <div class="card-title"><div class="icon red">✅</div> 필수 진행 사항</div>
+    <div class="notice-text" style="margin-bottom:14px;">법인카드 고정 지출 품의서는 <strong>매월 작성·제출이 필수</strong>입니다. 매월 누락 없이 아래 사항을 반드시 진행해 주세요.</div>
     <div class="purpose-list">
-      <div class="purpose-item"><div class="purpose-num">1</div><div><h4>지출 현황 인지 및 공백 방지</h4><p>자동결제는 별도 승인 없이 반복 결제되므로 최초 등록 이후 지출이 지속되는 사실을 인지하지 못하는 경우가 발생할 수 있습니다.<br>특히 담당자 퇴사·변경 시 인수인계 누락으로 관리 공백이 발생하는 것을 예방하고자 합니다.</p></div></div>
-      <div class="purpose-item"><div class="purpose-num">2</div><div><h4>비용 분석 및 선제적 통제</h4><p>월별 사용 금액을 확인하여 불필요하거나 과다한 고정 지출을 사전에 인지하고 통제합니다.</p></div></div>
+      <div class="purpose-item"><div class="purpose-num">1</div><div><h4>매월 품의서 작성</h4><p>매월 고정 지출 내역을 기준으로 품의서를 <strong>작성·제출</strong>해 주세요. (매월 작성 누락이 없도록 진행이 필요합니다.)</p></div></div>
+      <div class="purpose-item"><div class="purpose-num">2</div><div><h4>신규 고정 지출 반영</h4><p>해당 월에 <strong>새로 발생한 고정 지출 내역이 있으면 반드시 추가 반영</strong>하여 작성해 주세요.</p></div></div>
+      <div class="purpose-item"><div class="purpose-num">3</div><div><h4>하이웍스 품의서 작성·진행</h4><p>작성한 내역을 <strong>하이웍스 품의서 양식으로 변환하여 결재 상신</strong>까지 완료해 주세요.</p></div></div>
+    </div>
+  </div>
+
+  <!-- 기존 변경 안내 및 도입 목적 (접이식) -->
+  <div class="example-toggle">
+    <button class="example-toggle-btn" onclick="toggleNoticeBg()">
+      <span>📌 도입 배경 및 변경 안내 (참고)
+        <span class="example-toggle-hint">👆 클릭하면 기존 변경 안내와 도입 목적을 확인할 수 있습니다</span>
+      </span>
+      <span class="toggle-icon" id="noticeBgIcon">▼</span>
+    </button>
+    <div class="example-toggle-content" id="noticeBgContent">
+      <div class="notice-text">각 팀에서 발생하는 법인카드 지출 관리의 <strong>투명성과 효율성</strong>을 높이기 위해, 고정 지출에 대한 품의서 작성 방식을 아래와 같이 변경하였습니다.</div>
+      <div class="change-box">
+        <div class="label">품의 작성 방식 변경</div>
+        <div class="change-arrow">
+          <span class="change-from">최초 1회 품의</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          <span class="change-to">매월 품의서 작성</span>
+        </div>
+      </div>
+      <dl class="info-grid">
+        <dt>대상</dt><dd>각 팀별 법인카드 장기(고정) 지출 건</dd>
+        <dt>시행일</dt><dd><strong>2026년 3월 지출분</strong>부터</dd>
+      </dl>
+      <div class="notice-text" style="margin:18px 0 14px;font-weight:700;color:var(--text);">🎯 관리 체계 변경 목적</div>
+      <div class="notice-text" style="margin-bottom:14px;">단순한 절차 추가가 아닌, <strong>투명한 비용 관리와 효율적인 예산 운영</strong>을 위해 시행합니다.</div>
+      <div class="purpose-list">
+        <div class="purpose-item"><div class="purpose-num">1</div><div><h4>지출 현황 인지 및 공백 방지</h4><p>자동결제는 별도 승인 없이 반복 결제되므로 최초 등록 이후 지출이 지속되는 사실을 인지하지 못하는 경우가 발생할 수 있습니다.<br>특히 담당자 퇴사·변경 시 인수인계 누락으로 관리 공백이 발생하는 것을 예방하고자 합니다.</p></div></div>
+        <div class="purpose-item"><div class="purpose-num">2</div><div><h4>비용 분석 및 선제적 통제</h4><p>월별 사용 금액을 확인하여 불필요하거나 과다한 고정 지출을 사전에 인지하고 통제합니다.</p></div></div>
+      </div>
     </div>
   </div>
   <div class="card">
@@ -1336,6 +1352,14 @@ function switchMode(mode) {
 function toggleExample() {
   const content = document.getElementById('exampleToggleContent');
   const icon = document.getElementById('exampleToggleIcon');
+  content.classList.toggle('open');
+  icon.classList.toggle('open');
+}
+
+// 공지사항 - 도입 배경/목적 접이식 토글
+function toggleNoticeBg() {
+  const content = document.getElementById('noticeBgContent');
+  const icon = document.getElementById('noticeBgIcon');
   content.classList.toggle('open');
   icon.classList.toggle('open');
 }
