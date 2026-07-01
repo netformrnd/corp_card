@@ -1240,15 +1240,12 @@ const DB_ROOT = '/corp_card_fixed'; // 법인카드 고정지출 전용 경로
 // ══════════════════════════════════
 //  EmailJS 초기화 (하이웍스 품의서 미체크 안내메일)
 // ══════════════════════════════════
-const EMAILJS_PUBLIC_KEY = 'klhS_VPgK3_nZOdf8';
-const EMAILJS_SERVICE_ID = 'service_i06fo66';
-const EMAILJS_TEMPLATE_ID = 'template_bpqtkyn'; // ⚠️ 샐러드 전용 디자인 템플릿 — 법인카드 전용 템플릿 생성 후 교체 필요
-// ⚠️ 안내메일 발송 잠금(안전장치):
-//   위 template_bpqtkyn 은 '샐러드 초과금액' 전용 디자인 템플릿이라, 그대로 재사용하면
-//   법인카드 안내메일이 '샐러드' 양식으로 잘못 발송됩니다.
-//   → 법인카드 전용 EmailJS 템플릿을 만들어 EMAILJS_TEMPLATE_ID 를 교체한 뒤,
-//     아래 값을 true 로 바꿔야 실제 발송(자동/수동)이 동작합니다. (기본값: 발송 잠금)
-let NOTIFY_SEND_ENABLED = false;
+const EMAILJS_PUBLIC_KEY = '4-NanSpvPYJepwgat';           // 법인카드 전용 EmailJS 계정
+const EMAILJS_SERVICE_ID = 'service_ky491vg';            // 법인카드 전용 Gmail 서비스
+const EMAILJS_TEMPLATE_ID = 'template_y92qi2k';          // 법인카드 전용 범용 템플릿 (제목={{subject}}, 본문={{message}})
+// 안내메일 발송 활성화. (전용 템플릿 연결 완료 — 샐러드 템플릿 오발송 문제 해소)
+//   문제 재발 시 아래를 false 로 바꾸면 자동/수동 발송이 모두 잠깁니다.
+let NOTIFY_SEND_ENABLED = true;
 try { if (typeof emailjs !== 'undefined') emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.warn('EmailJS init failed', e); }
 
 // ══════════════════════════════════
@@ -4806,14 +4803,28 @@ function maybeAutoSend() {
   autoSendTriggered = true;
 
   (async () => {
-    // 메일 A: 항상 즉시 발송
+    // 메일 A: 확인 후 발송
     if (needA) {
-      let okCnt = 0, failCnt = 0;
-      for (const t of aTargets) {
-        const r = await sendNotifyEmailToTeam(t, curMonthKey, 'noticeA', true);
-        if (r.ok) okCnt++; else failCnt++;
+      const [ay, am] = curMonthKey.split('-').map(Number);
+      const ok = confirm(
+        `[월초 작성 안내 자동 발송]\n\n` +
+        `${ay}년 ${am}월 품의서 작성 안내를 전 팀 ${aTargets.length}개에 발송합니다.\n\n` +
+        `대상:\n${aTargets.join(', ')}\n\n` +
+        `발송하시겠습니까?\n(취소 시 오늘 다시 묻지 않습니다. 센터에서 수동 발송도 가능합니다.)`
+      );
+      if (ok) {
+        let okCnt = 0, failCnt = 0;
+        for (const t of aTargets) {
+          const r = await sendNotifyEmailToTeam(t, curMonthKey, 'noticeA', true);
+          if (r.ok) okCnt++; else failCnt++;
+        }
+        showToast(`✉ [월초 작성 안내] ${okCnt}건 성공${failCnt > 0 ? `, ${failCnt}건 실패` : ''}`);
+      } else {
+        // 취소 시 오늘 다시 묻지 않도록 skip 기록
+        fbDb.ref(`${DB_HW_ROOT}/history/${curMonthKey}/noticeA_skipped`).set({
+          sentAt: new Date().toISOString(), skippedBy: 'admin'
+        });
       }
-      showToast(`✉ [월초 작성 안내 자동발송] ${okCnt}건 성공${failCnt > 0 ? `, ${failCnt}건 실패` : ''}`);
     }
 
     // 메일 B: 미업로드 재안내 (발송 모드 설정 반영)
