@@ -1242,7 +1242,13 @@ const DB_ROOT = '/corp_card_fixed'; // 법인카드 고정지출 전용 경로
 // ══════════════════════════════════
 const EMAILJS_PUBLIC_KEY = 'klhS_VPgK3_nZOdf8';
 const EMAILJS_SERVICE_ID = 'service_i06fo66';
-const EMAILJS_TEMPLATE_ID = 'template_bpqtkyn'; // 미체크 안내용 (샐러드 시스템과 동일 템플릿 재활용)
+const EMAILJS_TEMPLATE_ID = 'template_bpqtkyn'; // ⚠️ 샐러드 전용 디자인 템플릿 — 법인카드 전용 템플릿 생성 후 교체 필요
+// ⚠️ 안내메일 발송 잠금(안전장치):
+//   위 template_bpqtkyn 은 '샐러드 초과금액' 전용 디자인 템플릿이라, 그대로 재사용하면
+//   법인카드 안내메일이 '샐러드' 양식으로 잘못 발송됩니다.
+//   → 법인카드 전용 EmailJS 템플릿을 만들어 EMAILJS_TEMPLATE_ID 를 교체한 뒤,
+//     아래 값을 true 로 바꿔야 실제 발송(자동/수동)이 동작합니다. (기본값: 발송 잠금)
+let NOTIFY_SEND_ENABLED = false;
 try { if (typeof emailjs !== 'undefined') emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.warn('EmailJS init failed', e); }
 
 // ══════════════════════════════════
@@ -4646,6 +4652,12 @@ function sendNotifyEmailToTeam(teamName, monthKey, type, silent) {
       resolve({ team: teamName, ok: false, reason: 'no_lib' });
       return;
     }
+    if (!NOTIFY_SEND_ENABLED) {
+      // 전용 템플릿 준비 전 발송 잠금 (샐러드 템플릿 오발송 방지)
+      if (!silent) showToast('⚠ 안내메일 발송이 잠금 상태입니다. (법인카드 전용 EmailJS 템플릿 설정 후 활성화 예정)');
+      resolve({ team: teamName, ok: false, reason: 'disabled' });
+      return;
+    }
     const [y, m] = monthKey.split('-').map(Number);
     const SITE_URL = 'https://netformrnd.github.io/corp_card/';
     // 메일 종류별 문안 분기: noticeA = 월초 작성 안내(전 팀) / 그 외(auto5·manual 등) = 미업로드 재안내
@@ -4733,6 +4745,10 @@ function recordSendHistory(monthKey, type, teamName, email, ok = true) {
 }
 
 async function bulkSendNotifyEmails() {
+  if (!NOTIFY_SEND_ENABLED) {
+    alert('⚠ 안내메일 발송이 잠금 상태입니다.\n\n현재 EmailJS 템플릿이 샐러드 전용 디자인이라, 그대로 보내면 법인카드 메일이 샐러드 양식으로 잘못 발송됩니다.\n법인카드 전용 템플릿을 만든 뒤 활성화할 예정입니다.');
+    return;
+  }
   if (!emailCenterCurrentMonth) emailCenterCurrentMonth = getPrevMonthKey();
   const monthKey = emailCenterCurrentMonth;
   const teams = Object.keys(allTeamsData);
@@ -4762,6 +4778,8 @@ async function bulkSendNotifyEmails() {
 //   메일 B(미업로드 재안내) : 매월 5일~, "전월" 미체크 팀(메일 등록) 대상, 월 1회
 let autoSendTriggered = false;
 function maybeAutoSend() {
+  // 전용 템플릿 준비 전 자동 발송 잠금 (샐러드 템플릿 오발송 방지)
+  if (!NOTIFY_SEND_ENABLED) return;
   // 경영관리팀 모드일 때만 동작
   if (autoSendTriggered) return;
   const adminMode = document.getElementById('mode-admin');
@@ -4832,6 +4850,10 @@ function maybeAutoSend() {
 
 // ── 메일 A(작성 안내) 수동 발송: 이번 달 전 팀 대상 ──
 async function sendNoticeAManually() {
+  if (!NOTIFY_SEND_ENABLED) {
+    alert('⚠ 안내메일 발송이 잠금 상태입니다.\n\n현재 EmailJS 템플릿이 샐러드 전용 디자인이라, 그대로 보내면 법인카드 메일이 샐러드 양식으로 잘못 발송됩니다.\n법인카드 전용 템플릿을 만든 뒤 활성화할 예정입니다.');
+    return;
+  }
   const monthKey = getCurrentMonthKey();
   const [y, m] = monthKey.split('-').map(Number);
   const teams = Object.keys(allTeamsData);
