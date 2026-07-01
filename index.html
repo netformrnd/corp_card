@@ -3330,6 +3330,26 @@ function renderStaffApprovalForm() {
     </tr></tfoot></table>`;
   }
 
+  // ─── 월 환산 총 합계 비용 요약 (내역입력 화면과 동일한 3카드 형태) ───
+  bodyHtml += `<div style="margin:26px 0 8px;padding:16px 18px;background:#F5F8FF;border:1px solid #D6E0F5;border-radius:10px;">`;
+  bodyHtml += `<div style="font-size:14px;font-weight:700;color:#1B2A4A;margin-bottom:12px;">💰 월 환산 총 합계 비용</div>`;
+  bodyHtml += `<table style="width:100%;border-collapse:separate;border-spacing:8px 0;"><tr>`;
+  bodyHtml += `<td style="width:33%;background:#fff;border:1px solid #D6E0F5;border-radius:8px;padding:14px 10px;text-align:center;vertical-align:middle;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">월 결제 합계</div>
+      <div style="font-size:17px;font-weight:700;color:#1B2A4A;">${formatNumber(Math.round(monthlyTotal))}원</div>
+    </td>`;
+  bodyHtml += `<td style="width:33%;background:#fff;border:1px solid #D6E0F5;border-radius:8px;padding:14px 10px;text-align:center;vertical-align:middle;">
+      <div style="font-size:12px;color:#666;margin-bottom:6px;">연 결제 (월 환산)</div>
+      <div style="font-size:17px;font-weight:700;color:#1B2A4A;">${formatNumber(Math.round(yearlyMonthly))}원</div>
+    </td>`;
+  bodyHtml += `<td style="width:34%;background:#1B2A4A;border:1px solid #1B2A4A;border-radius:8px;padding:14px 10px;text-align:center;vertical-align:middle;">
+      <div style="font-size:12px;color:#B9C6E0;margin-bottom:6px;">월 총 합계 <span style="font-size:11px;font-weight:400;">(원화 환산)</span></div>
+      <div style="font-size:18px;font-weight:700;color:#fff;">${formatNumber(Math.round(monthlyEquiv))}원</div>
+    </td>`;
+  bodyHtml += `</tr></table>`;
+  if (hasUsdItem) bodyHtml += `<div style="font-size:11px;color:#888;margin-top:8px;">※ USD 항목은 환율 1 USD = ${formatNumber(rate)}원 기준 원화 환산 적용</div>`;
+  bodyHtml += `</div>`;
+
   // 비고
   bodyHtml += `<p style="font-size:12px;color:#666;margin-top:20px;line-height:1.8;">※ 상기 금액은 법인카드 자동결제 고정 지출 내역입니다.</p>`;
   bodyHtml += `<p style="font-size:12px;color:#666;margin:0;line-height:1.8;">※ 세부 변동 사항 발생 시 별도 보고 드리겠습니다.</p>`;
