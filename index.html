@@ -454,6 +454,13 @@
   .email-history-item .h-tag.auto1 { background: #DBEAFE; color: #1E40AF; }
   .email-history-item .h-tag.auto5 { background: #FEF3C7; color: #92400E; }
   .email-history-item .h-tag.manual { background: #F3E8FF; color: #6B21A8; }
+  .email-history-item .h-tag.noticeA { background: #DCFCE7; color: #166534; }
+  .email-history-item .h-fail { color: #B91C1C; font-weight: 600; }
+  .notice-a-status { display: flex; align-items: center; gap: 8px; padding: 9px 13px; margin-bottom: 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; }
+  .notice-a-status.sent { background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; }
+  .notice-a-status.unsent { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+  .notice-a-status .na-send-btn { margin-left: auto; padding: 4px 10px; font-size: 11px; font-weight: 700; border: none; border-radius: 5px; background: #166534; color: #fff; cursor: pointer; }
+  .notice-a-status .na-send-btn:hover { background: #14532D; }
 
   /* Hiworks status pill in team status grid */
   .team-status-card .hw-pill { padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
@@ -747,7 +754,7 @@
           <div class="notify-email-input">
             <input type="email" id="staffNotifyEmail" placeholder="lead@netformrnd.com">
           </div>
-          <span class="notify-email-hint">팀 리드 또는 담당자 이메일을 1개 입력해 주세요. 매월 1일/5일에 품의서 업로드 미체크 팀에 안내메일이 발송됩니다.</span>
+          <span class="notify-email-hint">팀 리드 또는 담당자 이메일을 1개 입력해 주세요. 매월 1일 품의서 작성 안내가 전 팀에, 매월 5일 미업로드 팀에 재안내가 발송됩니다.</span>
         </div>
       </div>
     </div>
@@ -1003,7 +1010,7 @@
           </div>
         </div>
         <div class="hw-upload-warning" id="staffHwUploadWarning" style="display:none;">
-          ⚠️ 미체크 상태로 매월 1일/5일이 지나면 등록된 안내메일로 자동 알림이 발송됩니다.
+          ⚠️ 미체크 상태로 매월 5일이 지나면 등록된 안내메일로 미업로드 재안내가 자동 발송됩니다.
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:12px;">
@@ -1081,6 +1088,7 @@
       </div>
     </div>
     <div class="email-center-body">
+      <div id="emailNoticeAStatus"></div>
       <div class="email-center-stats" id="emailCenterStats"></div>
       <div id="emailCenterTeamList" class="email-team-list"></div>
       <div class="email-bulk-actions">
@@ -3888,6 +3896,26 @@ function renderEmailCenter() {
   const label = document.getElementById('emailCenterMonthLabel');
   if (label) label.textContent = `${y}년 ${m}월`;
 
+  // 이번 달 작성 안내(메일 A) 발송 상태 — 항상 "현재 월" 기준
+  const naEl = document.getElementById('emailNoticeAStatus');
+  if (naEl) {
+    const curKey = getCurrentMonthKey();
+    const [cy, cm] = curKey.split('-').map(Number);
+    const na = hwNotifyHistory?.[curKey]?.noticeA;
+    if (na && na.sentAt) {
+      const when = new Date(na.sentAt).toLocaleDateString('ko-KR');
+      const okN = (na.sentTo || []).length;
+      const failN = (na.failedTo || []).length;
+      naEl.className = 'notice-a-status sent';
+      naEl.innerHTML = `✅ ${cy}년 ${cm}월 작성 안내 발송완료 · 성공 ${okN}팀${failN ? ` · <span class="h-fail">실패 ${failN}팀</span>` : ''} (${when})`
+        + `<button class="na-send-btn" onclick="sendNoticeAManually()">다시 발송</button>`;
+    } else {
+      naEl.className = 'notice-a-status unsent';
+      naEl.innerHTML = `⏳ ${cy}년 ${cm}월 작성 안내 <strong>미발송</strong> · 매월 1일 자동발송(전 팀)`
+        + `<button class="na-send-btn" onclick="sendNoticeAManually()">지금 발송</button>`;
+    }
+  }
+
   const teams = Object.keys(allTeamsData);
   const uploadsForMonth = hwUploadData?.[monthKey] || {};
   let doneCnt = 0, pendingCnt = 0;
@@ -3901,7 +3929,8 @@ function renderEmailCenter() {
   // 통계
   const statsEl = document.getElementById('emailCenterStats');
   const histForMonth = hwNotifyHistory?.[monthKey] || {};
-  const sentCnt = ((histForMonth.auto1?.sentTo?.length) || 0)
+  const sentCnt = ((histForMonth.noticeA?.sentTo?.length) || 0)
+                + ((histForMonth.auto1?.sentTo?.length) || 0)
                 + ((histForMonth.auto5?.sentTo?.length) || 0)
                 + (Array.isArray(histForMonth.manual) ? histForMonth.manual.reduce((s,h)=>s+(h.sentTo?.length||0),0) : 0);
   if (statsEl) {
@@ -3947,10 +3976,11 @@ function renderEmailCenter() {
   const histEl = document.getElementById('emailHistoryList');
   if (histEl) {
     const items = [];
-    if (histForMonth.auto1?.sentAt) items.push({type:'auto1', time: histForMonth.auto1.sentAt, teams: histForMonth.auto1.sentTo || []});
-    if (histForMonth.auto5?.sentAt) items.push({type:'auto5', time: histForMonth.auto5.sentAt, teams: histForMonth.auto5.sentTo || []});
+    if (histForMonth.noticeA?.sentAt) items.push({type:'noticeA', time: histForMonth.noticeA.sentAt, teams: histForMonth.noticeA.sentTo || [], failed: histForMonth.noticeA.failedTo || []});
+    if (histForMonth.auto1?.sentAt) items.push({type:'auto1', time: histForMonth.auto1.sentAt, teams: histForMonth.auto1.sentTo || [], failed: histForMonth.auto1.failedTo || []});
+    if (histForMonth.auto5?.sentAt) items.push({type:'auto5', time: histForMonth.auto5.sentAt, teams: histForMonth.auto5.sentTo || [], failed: histForMonth.auto5.failedTo || []});
     if (Array.isArray(histForMonth.manual)) {
-      histForMonth.manual.forEach(h => items.push({type:'manual', time: h.sentAt, teams: h.sentTo || []}));
+      histForMonth.manual.forEach(h => items.push({type:'manual', time: h.sentAt, teams: h.sentTo || [], failed: h.failedTo || []}));
     }
     items.sort((a,b) => (b.time||'').localeCompare(a.time||''));
     if (items.length === 0) {
@@ -3958,10 +3988,13 @@ function renderEmailCenter() {
     } else {
       histEl.innerHTML = items.map(it => {
         const t = new Date(it.time).toLocaleString('ko-KR');
-        const tag = it.type === 'auto1' ? '<span class="h-tag auto1">1일 자동</span>' :
-                    it.type === 'auto5' ? '<span class="h-tag auto5">5일 자동</span>' :
+        const tag = it.type === 'noticeA' ? '<span class="h-tag noticeA">작성안내</span>' :
+                    it.type === 'auto1' ? '<span class="h-tag auto1">재안내(1일)</span>' :
+                    it.type === 'auto5' ? '<span class="h-tag auto5">재안내(5일)</span>' :
                     '<span class="h-tag manual">수동</span>';
-        return `<div class="email-history-item">${tag}${t} · ${it.teams.length}개 팀 (${it.teams.join(', ') || '-'})</div>`;
+        const failTxt = (it.failed && it.failed.length)
+          ? ` · <span class="h-fail">실패 ${it.failed.length}팀 (${it.failed.join(', ')})</span>` : '';
+        return `<div class="email-history-item">${tag}${t} · 성공 ${it.teams.length}팀 (${it.teams.join(', ') || '-'})${failTxt}</div>`;
       }).join('');
     }
   }
@@ -4614,6 +4647,26 @@ function sendNotifyEmailToTeam(teamName, monthKey, type, silent) {
       return;
     }
     const [y, m] = monthKey.split('-').map(Number);
+    const SITE_URL = 'https://netformrnd.github.io/corp_card/';
+    // 메일 종류별 문안 분기: noticeA = 월초 작성 안내(전 팀) / 그 외(auto5·manual 등) = 미업로드 재안내
+    let subject, message;
+    if (type === 'noticeA') {
+      subject = `[법인카드 고정지출] ${y}년 ${m}월 품의서 작성 안내`;
+      message = `${teamName} 담당자님, 안녕하세요. 경영관리팀입니다.\n\n`
+        + `${y}년 ${m}월 법인카드 고정지출 품의서 작성 기간입니다.\n`
+        + `아래 사항을 확인하여 기한 내 작성·제출 부탁드립니다.\n\n`
+        + `1. 매월 고정지출 내역 기준으로 품의서를 작성해 주세요.\n`
+        + `2. 이번 달 신규 고정지출이 발생했다면 반드시 추가 반영해 주세요.\n`
+        + `3. 작성 내역을 하이웍스 품의서로 제출해 주세요.\n\n`
+        + `▶ 작성 시스템: ${SITE_URL}\n\n— 경영관리팀`;
+    } else {
+      subject = `[법인카드 고정지출] ${y}년 ${m}월 하이웍스 품의서 업로드 재안내`;
+      message = `${teamName} 담당자님, 안녕하세요. 경영관리팀입니다.\n\n`
+        + `${y}년 ${m}월 법인카드 고정지출 품의서가\n아직 하이웍스에 업로드되지 않은 것으로 확인됩니다.\n\n`
+        + `기한 내 업로드가 어려우신 경우 경영관리팀으로 회신 부탁드립니다.\n`
+        + `빠른 시일 내 작성·업로드 부탁드립니다.\n\n`
+        + `▶ 작성 시스템: ${SITE_URL}\n\n— 경영관리팀`;
+    }
     const params = {
       to_email: email,
       to_name: teamName,
@@ -4621,47 +4674,58 @@ function sendNotifyEmailToTeam(teamName, monthKey, type, silent) {
       month: `${y}년 ${m}월`,
       year: String(y),
       monthNum: String(m),
-      subject: `[법인카드 고정지출] ${y}년 ${m}월 하이웍스 품의서 업로드 안내`,
-      message: `${teamName}\n\n${y}년 ${m}월 법인카드 고정지출 품의서가 아직 하이웍스에 업로드되지 않았습니다.\n\n빠른 시일 내 업로드 부탁드립니다.\n\n— 경영관리팀`
+      subject,
+      message
     };
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
       .then(() => {
-        recordSendHistory(monthKey, type, teamName, email);
+        recordSendHistory(monthKey, type, teamName, email, true);
         if (!silent) showToast(`✉ ${teamName} 안내메일 발송 완료 (${email})`);
         resolve({ team: teamName, ok: true });
       })
       .catch(err => {
         console.error('EmailJS send error:', err);
+        recordSendHistory(monthKey, type, teamName, email, false);
         if (!silent) showToast(`✗ ${teamName} 발송 실패: ${err?.text || err?.message || err}`);
         resolve({ team: teamName, ok: false, reason: 'send_fail', err });
       });
   });
 }
 
-function recordSendHistory(monthKey, type, teamName, email) {
+function recordSendHistory(monthKey, type, teamName, email, ok = true) {
   const ref = fbDb.ref(`${DB_HW_ROOT}/history/${monthKey}`);
   const now = new Date().toISOString();
   if (type === 'manual') {
     return ref.child('manual').once('value').then(snap => {
       const arr = snap.val() || [];
       // 마지막 manual entry가 같은 분이면 그 entry에 팀 추가, 아니면 새로 push
-      if (arr.length > 0 && Math.abs(new Date(arr[arr.length-1].sentAt) - new Date(now)) < 60000) {
-        const last = arr[arr.length - 1];
+      let last = arr.length > 0 ? arr[arr.length - 1] : null;
+      const within = last && Math.abs(new Date(last.sentAt) - new Date(now)) < 60000;
+      if (!within) { last = { sentAt: now, sentTo: [], emails: [], failedTo: [] }; arr.push(last); }
+      if (!last.sentTo) last.sentTo = [];
+      if (!last.emails) last.emails = [];
+      if (!last.failedTo) last.failedTo = [];
+      if (ok) {
         if (!last.sentTo.includes(teamName)) last.sentTo.push(teamName);
-        if (!last.emails) last.emails = [];
         if (!last.emails.includes(email)) last.emails.push(email);
       } else {
-        arr.push({ sentAt: now, sentTo: [teamName], emails: [email] });
+        if (!last.failedTo.includes(teamName)) last.failedTo.push(teamName);
       }
       return ref.child('manual').set(arr);
     });
   } else {
-    // auto1 / auto5: 한 번에 누적
+    // noticeA / auto1 / auto5: 한 번에 누적
     return ref.child(type).once('value').then(snap => {
-      const cur = snap.val() || { sentAt: now, sentTo: [], emails: [] };
-      if (!cur.sentTo.includes(teamName)) cur.sentTo.push(teamName);
+      const cur = snap.val() || { sentAt: now, sentTo: [], emails: [], failedTo: [] };
+      if (!cur.sentTo) cur.sentTo = [];
       if (!cur.emails) cur.emails = [];
-      if (!cur.emails.includes(email)) cur.emails.push(email);
+      if (!cur.failedTo) cur.failedTo = [];
+      if (ok) {
+        if (!cur.sentTo.includes(teamName)) cur.sentTo.push(teamName);
+        if (!cur.emails.includes(email)) cur.emails.push(email);
+      } else {
+        if (!cur.failedTo.includes(teamName)) cur.failedTo.push(teamName);
+      }
       cur.sentAt = now; // 마지막 발송 시각 갱신
       return ref.child(type).set(cur);
     });
@@ -4693,7 +4757,9 @@ async function bulkSendNotifyEmails() {
   showToast(`📤 발송 완료: ${okCnt}건 성공${failCnt > 0 ? `, ${failCnt}건 실패` : ''}`);
 }
 
-// ── 자동 발송 트리거 (1일 / 5일) ──
+// ── 자동 발송 트리거 ──
+//   메일 A(작성 안내) : 매월 1일~, "이번 달" 전 팀(메일 등록) 대상, 즉시 발송, 월 1회
+//   메일 B(미업로드 재안내) : 매월 5일~, "전월" 미체크 팀(메일 등록) 대상, 월 1회
 let autoSendTriggered = false;
 function maybeAutoSend() {
   // 경영관리팀 모드일 때만 동작
@@ -4703,61 +4769,90 @@ function maybeAutoSend() {
 
   const today = new Date();
   const day = today.getDate();
-  const targetMonthKey = getPrevMonthKey(); // 익월초 발송 = 전월 데이터에 대해
-
-  if (day < 1) return;
-  let trigger = null;
-  if (day >= 1 && day < 5) trigger = 'auto1';
-  else if (day >= 5) trigger = 'auto5';
-  else return;
-
-  // 이미 해당 월/트리거로 발송됐으면 skip
-  const hist = hwNotifyHistory?.[targetMonthKey]?.[trigger];
-  if (hist && hist.sentAt) return;
-
-  // 미체크 팀 + 안내메일 등록된 팀 추출
+  const curMonthKey = getCurrentMonthKey();  // 메일 A 대상: 이번 달
+  const prevMonthKey = getPrevMonthKey();    // 메일 B 대상: 전월
   const teams = Object.keys(allTeamsData);
-  const uploads = hwUploadData?.[targetMonthKey] || {};
-  const targets = teams.filter(t => !uploads?.[t]?.checked && (allTeamsData[t]?.meta?.notifyEmail || '').trim());
-  if (targets.length === 0) return;
 
-  // 5일 트리거의 경우, 1일에 이미 보낸 팀도 포함하여 재발송 (사용자 요청: "5일에도 미체크 팀에는 한번 더 발송")
-  // 즉, 현재 미체크인 팀 전체 대상
+  // ── 메일 A: 월초 작성 안내 (매월 1일~, 전 팀, 즉시) ──
+  const aHist = hwNotifyHistory?.[curMonthKey]?.noticeA;
+  const aTargets = teams.filter(t => (allTeamsData[t]?.meta?.notifyEmail || '').trim());
+  const needA = day >= 1 && !(aHist && aHist.sentAt) && aTargets.length > 0;
 
+  // ── 메일 B: 미업로드 재안내 (매월 5일~, 전월 미체크 팀) ──
+  const bHist = hwNotifyHistory?.[prevMonthKey]?.auto5;
+  const bUploads = hwUploadData?.[prevMonthKey] || {};
+  const bTargets = teams.filter(t => !bUploads?.[t]?.checked && (allTeamsData[t]?.meta?.notifyEmail || '').trim());
+  const needB = day >= 5 && !(bHist && bHist.sentAt) && bTargets.length > 0;
+
+  if (!needA && !needB) return;
   autoSendTriggered = true;
-  const triggerLabel = trigger === 'auto1' ? '매월 1일 1차' : '매월 5일 2차(재발송)';
-  const mode = hwSettings.autoSendMode || 'confirm';
 
-  const doSend = async () => {
-    let okCnt = 0, failCnt = 0;
-    for (const t of targets) {
-      const r = await sendNotifyEmailToTeam(t, targetMonthKey, trigger, true);
-      if (r.ok) okCnt++; else failCnt++;
-    }
-    showToast(`✉ [${triggerLabel} 자동 발송] ${okCnt}건 성공${failCnt > 0 ? `, ${failCnt}건 실패` : ''}`);
-  };
-
-  if (mode === 'immediate') {
-    doSend();
-  } else {
-    // confirm 모드
-    setTimeout(() => {
-      const ok = confirm(
-        `[${triggerLabel} 안내메일 자동 발송]\n\n` +
-        `${targetMonthKey} 미체크 팀 ${targets.length}개에 안내메일을 발송합니다.\n\n` +
-        `대상:\n${targets.join(', ')}\n\n` +
-        `발송하시겠습니까?\n(취소 시 오늘 다시 묻지 않습니다. 수동 발송은 언제든 가능합니다.)`
-      );
-      if (ok) doSend();
-      else {
-        // 취소 시에도 빈 기록을 남겨서 오늘 다시 묻지 않도록
-        fbDb.ref(`${DB_HW_ROOT}/history/${targetMonthKey}/${trigger}_skipped`).set({
-          sentAt: new Date().toISOString(),
-          skippedBy: 'admin'
-        });
+  (async () => {
+    // 메일 A: 항상 즉시 발송
+    if (needA) {
+      let okCnt = 0, failCnt = 0;
+      for (const t of aTargets) {
+        const r = await sendNotifyEmailToTeam(t, curMonthKey, 'noticeA', true);
+        if (r.ok) okCnt++; else failCnt++;
       }
-    }, 800);
+      showToast(`✉ [월초 작성 안내 자동발송] ${okCnt}건 성공${failCnt > 0 ? `, ${failCnt}건 실패` : ''}`);
+    }
+
+    // 메일 B: 미업로드 재안내 (발송 모드 설정 반영)
+    if (needB) {
+      const mode = hwSettings.autoSendMode || 'confirm';
+      const doSendB = async () => {
+        let okCnt = 0, failCnt = 0;
+        for (const t of bTargets) {
+          const r = await sendNotifyEmailToTeam(t, prevMonthKey, 'auto5', true);
+          if (r.ok) okCnt++; else failCnt++;
+        }
+        showToast(`✉ [미업로드 재안내 자동발송] ${okCnt}건 성공${failCnt > 0 ? `, ${failCnt}건 실패` : ''}`);
+      };
+      if (mode === 'immediate') {
+        await doSendB();
+      } else {
+        const ok = confirm(
+          `[미업로드 재안내 자동 발송 · 매월 5일]\n\n` +
+          `${prevMonthKey} 미체크 팀 ${bTargets.length}개에 재안내 메일을 발송합니다.\n\n` +
+          `대상:\n${bTargets.join(', ')}\n\n` +
+          `발송하시겠습니까?\n(취소 시 오늘 다시 묻지 않습니다. 수동 발송은 언제든 가능합니다.)`
+        );
+        if (ok) await doSendB();
+        else {
+          fbDb.ref(`${DB_HW_ROOT}/history/${prevMonthKey}/auto5_skipped`).set({
+            sentAt: new Date().toISOString(),
+            skippedBy: 'admin'
+          });
+        }
+      }
+    }
+  })();
+}
+
+// ── 메일 A(작성 안내) 수동 발송: 이번 달 전 팀 대상 ──
+async function sendNoticeAManually() {
+  const monthKey = getCurrentMonthKey();
+  const [y, m] = monthKey.split('-').map(Number);
+  const teams = Object.keys(allTeamsData);
+  const targets = teams.filter(t => (allTeamsData[t]?.meta?.notifyEmail || '').trim());
+  const noEmail = teams.filter(t => !(allTeamsData[t]?.meta?.notifyEmail || '').trim());
+  if (targets.length === 0) {
+    alert(`발송 대상이 없습니다.${noEmail.length ? `\n(안내메일 미등록 팀: ${noEmail.join(', ')})` : ''}`);
+    return;
   }
+  const already = hwNotifyHistory?.[monthKey]?.noticeA?.sentAt;
+  let msg = `${y}년 ${m}월 '품의서 작성 안내' 메일을 전 팀 ${targets.length}개에 발송합니다.\n\n대상:\n${targets.join(', ')}`;
+  if (noEmail.length) msg += `\n\n⚠ 메일 미등록(제외): ${noEmail.join(', ')}`;
+  if (already) msg += `\n\n※ 이번 달 이미 발송된 이력이 있습니다. 다시 발송하시겠습니까?`;
+  msg += '\n\n발송하시겠습니까?';
+  if (!confirm(msg)) return;
+  let okCnt = 0, failCnt = 0;
+  for (const t of targets) {
+    const r = await sendNotifyEmailToTeam(t, monthKey, 'noticeA', true);
+    if (r.ok) okCnt++; else failCnt++;
+  }
+  showToast(`📤 작성 안내 발송 완료: ${okCnt}건 성공${failCnt > 0 ? `, ${failCnt}건 실패` : ''}`);
 }
 
 // 관리자 탭 진입 시 자동 발송 체크
