@@ -134,6 +134,13 @@
   .currency-select { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text); background: var(--surface); cursor: pointer; min-width: 58px; }
   .currency-select:focus { outline: none; border-color: var(--accent); }
 
+  /* ── Brand (브랜드) : 특정 팀만 표시 ── */
+  .brand-col { display: none; }               /* 기본 숨김 */
+  #staffInput.brand-on .brand-col { display: table-cell; }  /* 브랜드 대상 팀일 때만 노출 */
+  .brand-input { width: 100%; padding: 6px 8px; border: 1px solid #C7D2FE; border-radius: var(--radius-sm); font-family: inherit; font-size: 12px; background: #F5F7FF; min-width: 100px; }
+  .brand-input:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .brand-badge { display: inline-block; margin-left: 6px; padding: 1px 7px; background: #EEF2FF; color: #3730A3; border: 1px solid #C7D2FE; border-radius: 10px; font-size: 10px; font-weight: 700; vertical-align: middle; white-space: nowrap; }
+
   /* ── Exchange Rate Info ── */
   .exchange-rate-info { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: var(--radius-sm); font-size: 12px; color: #9A3412; margin-bottom: 12px; line-height: 1.5; flex-wrap: wrap; }
   .exchange-rate-info .rate-value { font-weight: 700; color: #C2410C; }
@@ -812,6 +819,12 @@
         <h3>월 결제 서비스</h3>
         <button class="btn btn-outline" onclick="addStaffRow('monthly')">+ 행 추가</button>
       </div>
+      <datalist id="brandOptions">
+        <option value="그로홈"></option>
+        <option value="바라스데이"></option>
+        <option value="포어스토어"></option>
+        <option value="커머스 전체"></option>
+      </datalist>
       <div class="table-scroll">
         <table class="expense-table" id="staffMonthlyTable">
           <thead><tr>
@@ -828,6 +841,7 @@
             <th style="min-width:110px">사용 계정</th>
             <th style="min-width:70px">결제카드<br>(끝4자리)</th>
             <th style="min-width:60px">비고</th>
+            <th class="brand-col" style="min-width:100px">브랜드</th>
             <th style="width:36px"></th>
           </tr></thead>
           <tbody id="staffMonthlyBody">
@@ -845,6 +859,7 @@
               <td><input type="text" placeholder="이메일"></td>
               <td><input type="text" placeholder="0000"></td>
               <td><input type="text" placeholder="-"></td>
+              <td class="brand-col"><input type="text" class="brand-input" list="brandOptions" placeholder="브랜드 선택/입력"></td>
               <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
             </tr>
           </tbody>
@@ -876,6 +891,7 @@
             <th style="min-width:110px">사용 계정</th>
             <th style="min-width:70px">결제카드<br>(끝4자리)</th>
             <th style="min-width:60px">비고</th>
+            <th class="brand-col" style="min-width:100px">브랜드</th>
             <th style="width:36px"></th>
           </tr></thead>
           <tbody id="staffYearlyBody">
@@ -895,6 +911,7 @@
               <td><input type="text" placeholder="이메일"></td>
               <td><input type="text" placeholder="0000"></td>
               <td><input type="text" placeholder="-"></td>
+              <td class="brand-col"><input type="text" class="brand-input" list="brandOptions" placeholder="브랜드 선택/입력"></td>
               <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
             </tr>
           </tbody>
@@ -1252,6 +1269,23 @@ try { if (typeof emailjs !== 'undefined') emailjs.init(EMAILJS_PUBLIC_KEY); } ca
 //  State
 // ══════════════════════════════════
 let currentTeam = null;
+
+// ── 브랜드 구분 대상 팀 (이 팀들만 서비스 작성칸에 '브랜드' 열 노출) ──
+const BRAND_TEAMS = ['커머스 1팀', '커머스 2팀', '커머스 3팀'];
+function isBrandTeam(name) {
+  const n = (name || '').replace(/\s+/g, '');
+  return BRAND_TEAMS.some(t => t.replace(/\s+/g, '') === n);
+}
+// 입력 폼의 브랜드 열 노출/숨김 (현재 선택 팀 기준)
+function updateBrandColumnVisibility() {
+  const el = document.getElementById('staffInput');
+  if (el) el.classList.toggle('brand-on', isBrandTeam(currentTeam));
+}
+// 상세/품의서/검색 표의 서비스명 옆에 붙일 브랜드 배지
+function brandBadge(brand) {
+  const b = (brand || '').trim();
+  return b ? `<span class="brand-badge">🏷 ${b}</span>` : '';
+}
 let allTeamsData = {}; // { teamName: { meta, monthly, yearly, submittedAt } }
 let hwUploadData = {}; // { "YYYY-MM": { "팀명": { checked, updatedAt } } }
 let hwNotifyHistory = {}; // { "YYYY-MM": { auto1: {...}, auto5: {...}, manual: [...] } }
@@ -1560,6 +1594,9 @@ function renderTeamTabs() {
       toggleBtn.classList.remove('active');
     }
   }
+
+  // 브랜드 열 노출 동기화 (복원/실시간 갱신 포함)
+  updateBrandColumnVisibility();
 }
 
 // ── Staff Analytics Toggle ──
@@ -1888,6 +1925,7 @@ function selectTeam(teamName) {
   localStorage.setItem('cc_fixed_team', teamName);
   renderTeamTabs();
   loadTeamDataToForm();
+  updateBrandColumnVisibility();
   updateSubmittedBanner();
   if (staffAnalyticsOpen) renderStaffTeamAnalytics();
 }
@@ -1896,6 +1934,7 @@ function unlockTeam() {
   if (!confirm('다른 팀으로 변경하시겠습니까?\n(현재 입력 중인 내용은 저장되지 않습니다.)')) return;
   currentTeam = null;
   localStorage.removeItem('cc_fixed_team');
+  updateBrandColumnVisibility();
   // 비용분석 패널 닫기
   staffAnalyticsOpen = false;
   const saBtn = document.getElementById('staffAnalyticsToggle');
@@ -2028,6 +2067,7 @@ function addStaffRowWithData(type, data, num) {
       <td><input type="text" placeholder="이메일" value="${d.account||''}"></td>
       <td><input type="text" placeholder="0000" value="${d.card||''}"></td>
       <td><input type="text" placeholder="-" value="${d.note||''}"></td>
+      <td class="brand-col"><input type="text" class="brand-input" list="brandOptions" placeholder="브랜드 선택/입력" value="${d.brand||''}"></td>
       <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
     </tr>`);
   } else {
@@ -2049,6 +2089,7 @@ function addStaffRowWithData(type, data, num) {
       <td><input type="text" placeholder="이메일" value="${d.account||''}"></td>
       <td><input type="text" placeholder="0000" value="${d.card||''}"></td>
       <td><input type="text" placeholder="-" value="${d.note||''}"></td>
+      <td class="brand-col"><input type="text" class="brand-input" list="brandOptions" placeholder="브랜드 선택/입력" value="${d.brand||''}"></td>
       <td><button class="btn btn-danger" onclick="removeStaffRow(this)" style="padding:4px 7px;font-size:10px;">✕</button></td>
     </tr>`);
   }
@@ -2266,6 +2307,7 @@ function collectStaffData() {
     const catSel = selects[0];  // 카테고리 select
     const currSel = selects[1]; // 통화 select
     if (inputs[0]?.value.trim()) {
+      const brandVal = row.querySelector('.brand-input')?.value.trim() || '';
       monthly['m' + mIdx] = {
         category: catSel ? catSel.value : '기타',
         service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
@@ -2276,6 +2318,7 @@ function collectStaffData() {
         account: inputs[7].value.trim(), card: inputs[8].value.trim(),
         note: inputs[9].value.trim()
       };
+      if (brandVal) monthly['m' + mIdx].brand = brandVal;
       mIdx++;
     }
   }
@@ -2289,6 +2332,7 @@ function collectStaffData() {
     const currSel = selects[1]; // 통화 select
     const cycleSel = selects[2]; // 결제주기 select
     if (inputs[0]?.value.trim()) {
+      const brandVal = row.querySelector('.brand-input')?.value.trim() || '';
       yearly['y' + yIdx] = {
         category: catSel ? catSel.value : '기타',
         service: inputs[0].value.trim(), vendor: inputs[1].value.trim(),
@@ -2299,6 +2343,7 @@ function collectStaffData() {
         dept: inputs[7].value.trim(), account: inputs[8].value.trim(),
         card: inputs[9].value.trim(), note: inputs[10].value.trim()
       };
+      if (brandVal) yearly['y' + yIdx].brand = brandVal;
       yIdx++;
     }
   }
@@ -2399,7 +2444,7 @@ function renderStaffPreview() {
         <th>월 금액</th><th>결제주기</th><th>정기결제일</th><th>사용 부서</th><th>사용 계정</th><th>결제카드</th>
       </tr></thead><tbody>`;
     mArr.forEach((r, i) => {
-      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-monthly">${r.cycle}</span></td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
+      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong>${brandBadge(r.brand)}</td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-monthly">${r.cycle}</span></td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
     });
     html += `</tbody></table></div></div>`;
   }
@@ -2412,7 +2457,7 @@ function renderStaffPreview() {
       </tr></thead><tbody>`;
     yArr.forEach((r, i) => {
       const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
-      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-yearly">${r.cycle}</span></td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
+      html += `<tr><td><span class="row-num">${i+1}</span></td><td><strong>${r.service}</strong>${brandBadge(r.brand)}</td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td><strong>${r.amount}</strong></td><td><span class="badge-cycle badge-yearly">${r.cycle}</span></td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td></tr>`;
     });
     html += `</tbody></table></div></div>`;
   }
@@ -2506,7 +2551,7 @@ function renderAdminTeamDetail() {
       const amtDisplay = cur === 'USD'
         ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
         : `${formatNumber(amt)}`;
-      html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong>${brandBadge(r.brand)}</td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
     });
     html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="7" style="text-align:center;">월 결제 소계${hasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamMonthlyTotal))}원</td><td colspan="6"></td></tr>`;
     html += `</tbody></table></div></div>`;
@@ -2525,7 +2570,7 @@ function renderAdminTeamDetail() {
         ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
         : `${formatNumber(amt)}`;
       const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
-      html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+      html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong>${brandBadge(r.brand)}</td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
     });
     html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${hasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
     html += `</tbody></table></div></div>`;
@@ -2603,7 +2648,7 @@ function renderAdminAllDetail() {
         const amtDisplay = cur === 'USD'
           ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
           : `${formatNumber(amt)}`;
-        html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+        html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong>${brandBadge(r.brand)}</td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${r.payDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
       });
       html += `<tr style="background:var(--accent-soft);font-weight:600;"><td colspan="7" style="text-align:center;">월 결제 소계${teamHasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamMonthlyTotal))}원</td><td colspan="6"></td></tr>`;
       html += `</tbody></table></div></div>`;
@@ -2622,7 +2667,7 @@ function renderAdminAllDetail() {
           ? `USD ${formatNumber(amt)}<br><span style="font-size:10px;color:#888;">(≈${formatNumber(Math.round(amtKrw))}원)</span>`
           : `${formatNumber(amt)}`;
         const periodDisplay = r.period && r.renewDate ? r.period + ' ~ ' + r.renewDate : (r.period || '');
-        html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong></td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
+        html += `<tr><td>${i+1}</td><td>${r.category||'기타'}</td><td><strong>${r.service}</strong>${brandBadge(r.brand)}</td><td>${r.vendor}</td><td>${r.purpose}</td><td>${r.plan}</td><td>${cur}</td><td><strong>${amtDisplay}</strong></td><td>${r.cycle}</td><td>${periodDisplay}</td><td>${r.renewDate}</td><td>${r.dept}</td><td style="font-size:11px">${r.account}</td><td><span class="card-chip">${r.card}</span></td><td>${r.note||''}</td></tr>`;
       });
       html += `<tr style="background:#EDE9FE;font-weight:600;"><td colspan="7" style="text-align:center;">연 결제 소계${teamHasUsd?' (원화 환산)':''}</td><td style="text-align:right;padding-right:10px;">${formatNumber(Math.round(teamYearlyTotal))}원</td><td colspan="7"></td></tr>`;
       html += `</tbody></table></div></div>`;
@@ -2778,7 +2823,7 @@ function adminAllDetailSearch() {
         <td><span class="row-num">${i+1}</span></td>
         <td><strong>${r._team}</strong></td>
         <td>${r.category||'기타'}</td>
-        <td><strong>${highlightSearch(r.service||'', query)}</strong></td>
+        <td><strong>${highlightSearch(r.service||'', query)}</strong>${brandBadge(r.brand)}</td>
         <td>${highlightSearch(r.vendor||'', query)}</td>
         <td><span class="example-badge ${r._type==='월 결제'?'badge-monthly':'badge-yearly'}">${r._type}</span></td>
         <td>${r.plan||''}</td>
@@ -3287,7 +3332,7 @@ function renderStaffApprovalForm() {
       bodyHtml += `<tr>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${i+1}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'기타'}</td>
-        <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}${brandBadge(r.brand)}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.vendor||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;">${r.purpose||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:right;padding-right:10px;font-weight:600;">${amtDisplay}${cur==='USD' ? '<br><span style="font-size:10px;color:#888;">(≈'+formatNumber(Math.round(r.amountKrw))+'원)</span>' : ''}</td>
@@ -3324,7 +3369,7 @@ function renderStaffApprovalForm() {
       bodyHtml += `<tr>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${i+1}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;font-size:11px;">${r.category||'기타'}</td>
-        <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}</td>
+        <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;font-weight:600;">${r.service}${brandBadge(r.brand)}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:center;">${r.vendor||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:left;padding-left:10px;">${r.purpose||''}</td>
         <td style="border:1px solid #aaa;padding:6px 8px;text-align:right;padding-right:10px;font-weight:700;">${amtDisplay}${cur==='USD' ? '<br><span style="font-size:10px;color:#888;">(≈'+formatNumber(Math.round(r.amountKrw))+'원)</span>' : ''}</td>
@@ -3571,18 +3616,18 @@ function buildCSVForTeam(teamName) {
 
   const mArr = data.monthly ? Object.values(data.monthly) : [];
   if (mArr.length > 0) {
-    csv += `"[월 결제 서비스]"\n"No.","카테고리","서비스명","업체명","결재목적","이용 플랜","통화","월 금액","결제주기","정기결제일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    csv += `"[월 결제 서비스]"\n"No.","카테고리","서비스명","브랜드","업체명","결재목적","이용 플랜","통화","월 금액","결제주기","정기결제일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
     mArr.forEach((r, i) => {
-      csv += `"${i+1}","${csvSafe(r.category||'기타')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.payDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+      csv += `"${i+1}","${csvSafe(r.category||'기타')}","${csvSafe(r.service)}","${csvSafe(r.brand)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.payDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
     });
     csv += '\n';
   }
 
   const yArr = data.yearly ? Object.values(data.yearly) : [];
   if (yArr.length > 0) {
-    csv += `"[연 결제 서비스]"\n"No.","카테고리","서비스명","업체명","결재목적","이용 플랜","통화","연 금액","결제주기","시작일","종료일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
+    csv += `"[연 결제 서비스]"\n"No.","카테고리","서비스명","브랜드","업체명","결재목적","이용 플랜","통화","연 금액","결제주기","시작일","종료일","사용 부서","사용 계정","결제카드(끝4자리)","비고"\n`;
     yArr.forEach((r, i) => {
-      csv += `"${i+1}","${csvSafe(r.category||'기타')}","${csvSafe(r.service)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
+      csv += `"${i+1}","${csvSafe(r.category||'기타')}","${csvSafe(r.service)}","${csvSafe(r.brand)}","${csvSafe(r.vendor)}","${csvSafe(r.purpose)}","${csvSafe(r.plan)}","${csvSafe(r.currency||'KRW')}","${csvSafe(r.amount)}","${csvSafe(r.cycle)}","${csvSafe(r.period)}","${csvSafe(r.renewDate)}","${csvSafe(r.dept)}","${csvSafe(r.account)}","${csvSafe(r.card)}","${csvSafe(r.note)}"\n`;
     });
   }
 
