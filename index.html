@@ -1073,7 +1073,7 @@
   <div id="adminAllOverview" class="section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <div style="font-size:15px;font-weight:700;color:var(--primary);">📋 전체 팀 고정 지출 내역</div>
-      <button class="btn btn-csv btn-lg" onclick="downloadAllCSV()" style="display:flex;align-items:center;gap:6px;">📥 전체 CSV 다운로드</button>
+      <button class="btn btn-csv btn-lg" onclick="downloadAllExcel()" style="display:flex;align-items:center;gap:6px;">📊 전체 엑셀 다운로드</button>
     </div>
     <!-- 검색 바 -->
     <div class="card" style="padding:14px 18px;margin-bottom:16px;background:linear-gradient(135deg,#F8FAFC,#EFF6FF);border:1px solid #DBEAFE;">
@@ -3665,6 +3665,106 @@ function downloadAllCSV() {
   const stamp = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
   downloadBlobFile(combined, `법인카드_고정지출_전체_${stamp}.csv`, 'text/csv;charset=utf-8;');
   showToast(`${count}개 팀 전체 CSV 다운로드 완료`);
+}
+
+// ══════════════════════════════════
+//  전체 엑셀(.xlsx) 리포트 — 요약 시트 + 상세 시트
+// ══════════════════════════════════
+function cycleDivisorFixed(cycle) {
+  const c = (cycle || '').trim();
+  if (c === '6개월') return 6;
+  if (c === '3개월') return 3;
+  return 12; // 연간/기타
+}
+
+function downloadAllExcel() {
+  if (typeof XLSX === 'undefined') { showToast('엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도해 주세요.'); return; }
+  const teams = Object.keys(allTeamsData);
+  if (teams.length === 0) { showToast('등록된 팀이 없습니다.'); return; }
+
+  const rate = getExchangeRate();
+  const MONEY = '#,##0';
+  const details = []; // AOA rows
+  const summaryRows = []; // {team, mCnt, yCnt, mKrw, yKrw, equiv}
+  let totM = 0, totY = 0, totE = 0;
+
+  teams.forEach(team => {
+    const d = allTeamsData[team] || {};
+    const mArr = d.monthly ? Object.values(d.monthly) : [];
+    const yArr = d.yearly ? Object.values(d.yearly) : [];
+    if (mArr.length === 0 && yArr.length === 0) return; // 데이터 없는 팀 제외
+
+    let mKrw = 0, yKrw = 0, equiv = 0;
+    mArr.forEach(r => {
+      const cur = r.currency || 'KRW';
+      const orig = (r.amount || '').toString().trim();
+      const a = parseAmount(r.amount);
+      const krw = cur === 'USD' ? a * rate : a;
+      mKrw += krw; equiv += krw;
+      details.push([team, '월', r.category || '기타', r.service || '', r.brand || '', r.vendor || '',
+        r.purpose || '', r.plan || '', cur, (orig === '' ? '' : a), Math.round(krw), Math.round(krw),
+        r.cycle || '월별', r.payDate || '', r.dept || '', r.account || '', r.card || '', r.note || '']);
+    });
+    yArr.forEach(r => {
+      const cur = r.currency || 'KRW';
+      const orig = (r.amount || '').toString().trim();
+      const a = parseAmount(r.amount);
+      const krw = cur === 'USD' ? a * rate : a;
+      const eq = krw / cycleDivisorFixed(r.cycle);
+      yKrw += krw; equiv += eq;
+      const period = (r.period && r.renewDate) ? r.period + ' ~ ' + r.renewDate : (r.period || '');
+      details.push([team, '연', r.category || '기타', r.service || '', r.brand || '', r.vendor || '',
+        r.purpose || '', r.plan || '', cur, (orig === '' ? '' : a), Math.round(krw), Math.round(eq),
+        r.cycle || '연간', period, r.dept || '', r.account || '', r.card || '', r.note || '']);
+    });
+    summaryRows.push({ team, mCnt: mArr.length, yCnt: yArr.length, mKrw, yKrw, equiv });
+    totM += mKrw; totY += yKrw; totE += equiv;
+  });
+
+  if (details.length === 0) { showToast('다운로드할 데이터가 없습니다.'); return; }
+
+  // ── 요약 시트 ──
+  const sumAoa = [];
+  sumAoa.push([`법인카드 고정지출 전체 집계 (1 USD = ${formatNumber(rate)}원 환산)`]);
+  sumAoa.push([]);
+  sumAoa.push(['부서명', '월 결제(원)', '연 결제(원)', '월 환산 합계(원)', '월 건수', '연 건수']);
+  summaryRows.forEach(s => sumAoa.push([s.team, Math.round(s.mKrw), Math.round(s.yKrw), Math.round(s.equiv), s.mCnt, s.yCnt]));
+  sumAoa.push(['전체 총합', Math.round(totM), Math.round(totY), Math.round(totE),
+    summaryRows.reduce((a, s) => a + s.mCnt, 0), summaryRows.reduce((a, s) => a + s.yCnt, 0)]);
+
+  const wsS = XLSX.utils.aoa_to_sheet(sumAoa);
+  wsS['!cols'] = [{ wch: 16 }, { wch: 15 }, { wch: 15 }, { wch: 16 }, { wch: 8 }, { wch: 8 }];
+  wsS['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+  const sumDataEnd = sumAoa.length - 1; // 0-based last row (전체 총합)
+  for (let r = 3; r <= sumDataEnd; r++) {
+    for (const c of [1, 2, 3]) {
+      const ref = XLSX.utils.encode_cell({ r, c });
+      if (wsS[ref]) wsS[ref].z = MONEY;
+    }
+  }
+  wsS['!autofilter'] = { ref: `A3:F${sumDataEnd}` }; // 헤더~팀별(총합 제외)
+
+  // ── 상세 시트 ──
+  const detHead = ['부서명', '구분', '카테고리', '서비스명', '브랜드', '업체명', '결재목적', '이용 플랜',
+    '통화', '금액(원본)', '금액(원화)', '월 환산(원)', '결제주기', '결제일/기간', '사용 부서', '사용 계정', '카드', '비고'];
+  const wsD = XLSX.utils.aoa_to_sheet([detHead, ...details]);
+  wsD['!cols'] = [14, 5, 9, 18, 12, 12, 28, 14, 6, 11, 12, 12, 9, 22, 14, 20, 8, 20].map(w => ({ wch: w }));
+  for (let r = 1; r <= details.length; r++) {
+    for (const c of [9, 10, 11]) { // 금액(원본), 금액(원화), 월환산(원)
+      const ref = XLSX.utils.encode_cell({ r, c });
+      if (wsD[ref] && typeof wsD[ref].v === 'number') wsD[ref].z = MONEY;
+    }
+  }
+  wsD['!autofilter'] = { ref: `A1:R${details.length + 1}` };
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsS, '요약');
+  XLSX.utils.book_append_sheet(wb, wsD, '상세');
+
+  const now = new Date();
+  const stamp = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+  XLSX.writeFile(wb, `법인카드_고정지출_전체_${stamp}.xlsx`);
+  showToast(`전체 엑셀 다운로드 완료 (${summaryRows.length}개 팀 · 월환산 총합 ${formatNumber(Math.round(totE))}원)`);
 }
 
 function downloadCurrentTeamCSV() {
